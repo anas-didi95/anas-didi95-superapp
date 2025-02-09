@@ -16,6 +16,8 @@ repositories { mavenCentral() }
 
 val vertxVersion = "4.5.12"
 val junitJupiterVersion = "5.9.1"
+val log4j2Version = "2.12.4"
+val jacksonVersion = "2.18.2"
 
 val mainVerticleName = "com.anasdidi.superapp.MainVerticle"
 val launcherClassName = "io.vertx.core.Launcher"
@@ -30,6 +32,10 @@ dependencies {
   implementation("io.vertx:vertx-web")
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
+
+  implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
+  implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
+  implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 }
 
 java {

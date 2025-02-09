@@ -3,11 +3,17 @@ package com.anasdidi.superapp;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class MainVerticle extends AbstractVerticle {
 
+  private static final Logger logger = LogManager.getLogger(MainVerticle.class);
+
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
+    int port = 8888;
+
     vertx
         .createHttpServer()
         .requestHandler(
@@ -19,7 +25,7 @@ public class MainVerticle extends AbstractVerticle {
             http -> {
               if (http.succeeded()) {
                 startPromise.complete();
-                System.out.println("HTTP server started on port 8888");
+                logger.info("HTTP server started on port {}", port);
               } else {
                 startPromise.fail(http.cause());
               }

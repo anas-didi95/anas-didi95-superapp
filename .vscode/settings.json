@@ -7,7 +7,7 @@
   "[java]": {
     "files.trimTrailingWhitespace": false,
     "spotlessGradle.diagnostics.enable": true,
-    "spotlessGradle.format.enable": true,
+    "spotlessGradle.format.enable": false,
     "editor.defaultFormatter": "richardwillis.vscode-spotless-gradle",
     "editor.codeActionsOnSave": {
       "source.fixAll.spotlessGradle": "explicit"
@@ -16,7 +16,7 @@
   "[gradle]": {
     "files.trimTrailingWhitespace": false,
     "spotlessGradle.diagnostics.enable": true,
-    "spotlessGradle.format.enable": true,
+    "spotlessGradle.format.enable": false,
     "editor.defaultFormatter": "richardwillis.vscode-spotless-gradle",
     "editor.codeActionsOnSave": {
       "source.fixAll.spotlessGradle": "explicit"
