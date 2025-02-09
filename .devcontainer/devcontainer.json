@@ -30,7 +30,8 @@
         "redhat.vscode-xml",
         "redhat.vscode-yaml",
         "vscjava.vscode-gradle",
-        "richardwillis.vscode-spotless-gradle"
+        "richardwillis.vscode-spotless-gradle",
+        "42Crunch.vscode-openapi"
       ]
     }
   }

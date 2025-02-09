@@ -1,0 +1,48 @@
+openapi: 3.0.3
+
+info:
+  title: Anas Juwaidi's SuperApp - OpenAPI 3.0
+  description: |-
+    **Anas Juwaidi's SuperApp**
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: anas.didi95@tutomail.com
+  version: 0.1.0
+
+servers:
+  - url: http://localhost:8888
+    description: dev
+
+tags:
+  - name: edumgmt
+    description: Education Management
+
+paths:
+  /edumgmt/v1/student:
+    get:
+      tags:
+        - edumgmt
+        - student
+      summary: Search student list
+      description: Search student list
+      operationId: searchStudentList
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+
+components:
+  schemas:
+    Student:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 5997af18-e3e4-4f77-94b3-10ac4e8b7105
+        name:
+          type: string
+          example: Ali Bin Abu

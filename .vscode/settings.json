@@ -1,12 +1,12 @@
 {
-  "java.configuration.updateBuildConfiguration": "interactive",
+  "java.configuration.updateBuildConfiguration": "automatic",
 
   "java.import.gradle.java.home": "/usr/lib/jvm/msopenjdk-current",
 
-  "java.format.enabled": true,
+  "java.format.enabled": false,
   "[java]": {
     "files.trimTrailingWhitespace": false,
-    "spotlessGradle.diagnostics.enable": true,
+    "spotlessGradle.diagnostics.enable": false,
     "spotlessGradle.format.enable": false,
     "editor.defaultFormatter": "richardwillis.vscode-spotless-gradle",
     "editor.codeActionsOnSave": {
@@ -15,7 +15,7 @@
   },
   "[gradle]": {
     "files.trimTrailingWhitespace": false,
-    "spotlessGradle.diagnostics.enable": true,
+    "spotlessGradle.diagnostics.enable": false,
     "spotlessGradle.format.enable": false,
     "editor.defaultFormatter": "richardwillis.vscode-spotless-gradle",
     "editor.codeActionsOnSave": {
