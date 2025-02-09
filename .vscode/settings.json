@@ -1,7 +1,9 @@
 {
   "java.configuration.updateBuildConfiguration": "interactive",
 
-  "java.format.enabled": false,
+  "java.import.gradle.java.home": "/usr/lib/jvm/msopenjdk-current",
+
+  "java.format.enabled": true,
   "[java]": {
     "files.trimTrailingWhitespace": false,
     "spotlessGradle.diagnostics.enable": true,
