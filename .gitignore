@@ -1,3 +1,7 @@
+.gradle-cache/
+.vscode-server/
+build/
+
 ### Vert.x ###
 .vertx/
 

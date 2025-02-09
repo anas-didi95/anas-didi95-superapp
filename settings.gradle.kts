@@ -1,1 +1,1 @@
-rootProject.name = "superapp"
+rootProject.name = "anas-didi95-superapp"

@@ -8,3 +8,5 @@ services:
       driver: local
     volumes:
       - ".:/home/vscode/workspace:z"
+      - ".gradle-cache:/home/vscode/.gradle:z"
+      - ".vscode-server:/home/vscode/.vscode-server:z"
