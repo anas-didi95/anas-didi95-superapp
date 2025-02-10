@@ -14,35 +14,33 @@ servers:
     description: dev
 
 tags:
-  - name: edumgmt
-    description: Education Management
+  - name: hello-world
+    description: Hello World
 
 paths:
-  /edumgmt/v1/student:
+  /hello-world/v1/greet:
     get:
       tags:
-        - edumgmt
-        - student
-      summary: Search student list
-      description: Search student list
-      operationId: searchStudentList
+        - hello-world
+      description: Greeting
+      summary: Greeting
+      operationId: greeting
+      parameters:
+        - name: lang
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
-        200:
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Student"
+        "200":
+          description: OK
 
 components:
   schemas:
-    Student:
+    HelloWorld:
       type: object
       properties:
-        id:
+        lang:
           type: string
-          format: uuid
-          example: 5997af18-e3e4-4f77-94b3-10ac4e8b7105
-        name:
+        value:
           type: string
-          example: Ali Bin Abu

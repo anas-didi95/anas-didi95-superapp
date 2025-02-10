@@ -11,3 +11,9 @@ Configuration:
       level: INFO
       AppenderRef:
         ref: Console
+    logger:
+      - name: com.anasdidi.superapp
+        level: DEBUG
+        additivity: false
+        AppenderRef:
+          ref: Console
