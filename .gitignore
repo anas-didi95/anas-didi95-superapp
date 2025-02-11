@@ -3,6 +3,8 @@
 .h2/
 build/
 
+.env
+
 ### Vert.x ###
 .vertx/
 

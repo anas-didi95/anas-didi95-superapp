@@ -6,6 +6,8 @@ services:
     command: sleep infinity
     logging:
       driver: local
+    env_file:
+      - .env
     volumes:
       - ".:/home/vscode/workspace:z"
       - ".gradle-cache:/home/vscode/.gradle:z"
