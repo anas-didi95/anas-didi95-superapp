@@ -2,7 +2,8 @@
 package com.anasdidi.superapp;
 
 import com.anasdidi.superapp.common.BaseVerticle;
-import com.anasdidi.superapp.helloworld.HelloWorldVerticle;
+import com.anasdidi.superapp.verticle.helloworld.HelloWorldVerticle;
+
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -45,7 +46,7 @@ public class MainVerticle extends AbstractVerticle {
 
     verticle.onComplete(
         o -> {
-          logger.info("[start] All modules started...{}", verticle.isComplete());
+          logger.info("[start] All verticles started...{}", verticle.isComplete());
           Router router = routerBuilder.result().createRouter();
           router.errorHandler(
               404,

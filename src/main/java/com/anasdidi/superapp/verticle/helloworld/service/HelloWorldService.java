@@ -1,9 +1,10 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
-package com.anasdidi.superapp.helloworld.service;
+package com.anasdidi.superapp.verticle.helloworld.service;
 
 import com.anasdidi.superapp.common.BaseService;
-import com.anasdidi.superapp.helloworld.dto.HelloWorldBaseReqDto;
-import com.anasdidi.superapp.helloworld.dto.HelloWorldBaseResDto;
+import com.anasdidi.superapp.verticle.helloworld.dto.HelloWorldBaseReqDto;
+import com.anasdidi.superapp.verticle.helloworld.dto.HelloWorldBaseResDto;
+
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.openapi.router.RouterBuilder;

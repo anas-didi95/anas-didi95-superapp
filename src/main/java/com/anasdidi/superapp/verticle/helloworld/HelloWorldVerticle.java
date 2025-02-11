@@ -1,9 +1,10 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
-package com.anasdidi.superapp.helloworld;
+package com.anasdidi.superapp.verticle.helloworld;
 
 import com.anasdidi.superapp.common.BaseService;
 import com.anasdidi.superapp.common.BaseVerticle;
-import com.anasdidi.superapp.helloworld.service.impl.GreetingService;
+import com.anasdidi.superapp.verticle.helloworld.service.impl.GreetingService;
+
 import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
