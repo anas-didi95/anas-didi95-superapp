@@ -2,11 +2,12 @@
 package com.anasdidi.superapp;
 
 import com.anasdidi.superapp.helloworld.HelloWorldVerticle;
-
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpHeaders;
@@ -15,6 +16,9 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.openapi.router.RequestExtractor;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.openapi.contract.OpenAPIContract;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,30 +28,18 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
-    Future<JsonObject> configRetriever = ConfigRetriever.create(vertx, new ConfigRetrieverOptions().addStore(new ConfigStoreOptions().setType("file").setFormat("yaml").setConfig(new JsonObject().put("path", "application.yml")))).getConfig();
-    String openApiContractPath = "openapi.yml";
-    Future<RouterBuilder> openApi =
-        OpenAPIContract.from(vertx, openApiContractPath)
-            .onFailure(error -> logger.error("[start] Fail to get contract!", error))
-            .onSuccess(o -> logger.info("[start] Get contract {}", openApiContractPath))
-            .compose(
-                o ->
-                    Future.succeededFuture(
-                        RouterBuilder.create(vertx, o, RequestExtractor.withBodyHandler())));
+    long timeStart = System.currentTimeMillis();
+    Future<JsonObject> config = processConfig();
+    Future<RouterBuilder> routerBuilder =
+        config.flatMap(o -> processOpenApi(o.getJsonObject("app").getString("openApiPath")));
+    Future<CompositeFuture> verticle =
+        Future.all(config, routerBuilder)
+            .compose(o -> processVerticle(routerBuilder.result(), config.result()));
 
-    Future<String> helloWorld =
-        openApi
-            .compose(o -> vertx.deployVerticle(new HelloWorldVerticle(o)))
-            .onComplete(o -> System.out.println("ONCOMPLETE"))
-            .onFailure(o -> System.err.println(o));
-
-    Future.all(openApi, helloWorld, configRetriever)
-        .onSuccess(
+    Future.all(config, routerBuilder, verticle)
+        .onComplete(
             o -> {
-              int port = configRetriever.result().getJsonObject("app").getInteger("port");
-              System.out.println("Verticle " + o.resultAt(1));
-              RouterBuilder routerBuilder = o.resultAt(0);
-              Router router = routerBuilder.createRouter();
+              Router router = routerBuilder.result().createRouter();
               router.errorHandler(
                   404,
                   routingContext -> {
@@ -82,23 +74,68 @@ public class MainVerticle extends AbstractVerticle {
                         .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                         .end(errorObject.encode());
                   });
-
               Router mainRouter = Router.router(vertx);
               mainRouter.route("/*").subRouter(router);
 
+              int port = config.result().getJsonObject("app").getInteger("port");
               vertx
                   .createHttpServer()
                   .requestHandler(mainRouter)
                   .listen(port)
                   .onComplete(
-                      http -> {
-                        if (http.succeeded()) {
-                          startPromise.complete();
-                          logger.info("HTTP server started on port {}", port);
-                        } else {
-                          startPromise.fail(http.cause());
-                        }
-                      });
+                      oo -> {
+                        logger.info("[start] HTTP server started on port {}...{}ms", port, System.currentTimeMillis() - timeStart);
+                        startPromise.complete();
+                      },
+                      startPromise::fail);
             });
+  }
+
+  private Future<JsonObject> processConfig() {
+    Function<JsonObject, String> configPath = o -> o.getString("config.path", "application.yml");
+
+    return ConfigRetriever.create(
+            vertx, new ConfigRetrieverOptions().addStore(new ConfigStoreOptions().setType("sys")))
+        .getConfig()
+        .onComplete(
+            o -> logger.info("[processConfig] Get config path...{}", configPath.apply(o)),
+            o -> logger.error("[processConfig] Fail to get config path!", o))
+        .compose(
+            o ->
+                ConfigRetriever.create(
+                        vertx,
+                        new ConfigRetrieverOptions()
+                            .addStore(
+                                new ConfigStoreOptions()
+                                    .setOptional(false)
+                                    .setType("file")
+                                    .setFormat("yaml")
+                                    .setConfig(new JsonObject().put("path", configPath.apply(o)))))
+                    .getConfig()
+                    .onComplete(
+                        oo -> logger.info("[processConfig] Get app config..."),
+                        oo -> logger.error("Fail to get app config!", oo)));
+  }
+
+  private Future<RouterBuilder> processOpenApi(String path) {
+    return OpenAPIContract.from(vertx, path)
+        .onComplete(
+            o -> logger.info("[processOpenApi] Get openapi contract...{}", path),
+            o -> logger.error("[processOpenApi] Fail to get openapi contract!", o))
+        .compose(
+            o ->
+                Future.succeededFuture(
+                    RouterBuilder.create(vertx, o, RequestExtractor.withBodyHandler())))
+        .onComplete(
+            oo -> logger.info("[processOpenApi] Build router builder..."),
+            oo -> logger.error("[processOpenApi] Fail to build router builder!", oo));
+  }
+
+  private CompositeFuture processVerticle(RouterBuilder routerBuilder, JsonObject config) {
+    List<Future<String>> verticle =
+        Arrays.asList(
+            vertx.deployVerticle(
+                new HelloWorldVerticle(routerBuilder), new DeploymentOptions().setConfig(config)));
+    return Future.all(verticle);
   }
 }
