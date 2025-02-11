@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import java.util.Properties
 import org.gradle.api.tasks.testing.logging.TestLogEvent.*
 
 plugins {
@@ -92,3 +93,20 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     // ktlint() // or ktfmt() or prettier()
   }
 }
+
+tasks.register("createProperties") {
+  dependsOn(tasks.processResources)
+
+  doLast {
+    val versionFile = file("$buildDir/resources/main/version.properties")
+    versionFile.parentFile.mkdirs() // Ensure that the parent directories exist
+
+    versionFile.printWriter().use { writer ->
+      val properties = Properties()
+      properties["version"] = project.version.toString()
+      properties.store(writer, null)
+    }
+  }
+}
+
+tasks.classes { dependsOn(tasks.named("createProperties")) }
