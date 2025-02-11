@@ -4,4 +4,4 @@ app:
 
   verticle:
     HelloWorldVerticle:
-      name: asdf
+      enabled: true

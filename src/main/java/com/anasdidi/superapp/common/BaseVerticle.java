@@ -32,11 +32,14 @@ public abstract class BaseVerticle extends AbstractVerticle {
       }
       route.addHandler(service::process);
       logger.info(
-          "[start] Register route {}...{}", operation.getOpenAPIPath(), operation.getOperationId());
+          "[{}] Register route {}...{}",
+          this.getClass().getSimpleName(),
+          operation.getOpenAPIPath(),
+          operation.getOperationId());
     }
 
     logger.info(
-        "[start] {} started...{}ms",
+        "[{}] Verticle started...{}ms",
         this.getClass().getSimpleName(),
         System.currentTimeMillis() - timeStart);
     startPromise.complete();

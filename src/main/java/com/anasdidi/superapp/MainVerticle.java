@@ -3,7 +3,6 @@ package com.anasdidi.superapp;
 
 import com.anasdidi.superapp.common.BaseVerticle;
 import com.anasdidi.superapp.verticle.helloworld.HelloWorldVerticle;
-
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -150,8 +149,16 @@ public class MainVerticle extends AbstractVerticle {
             o1.getJsonObject("app")
                 .getJsonObject("verticle")
                 .getJsonObject(o2.getClass().getSimpleName());
+
     List<Future<String>> deployList =
         verticleList.stream()
+            .filter(
+                o -> {
+                  boolean enabled = vtxConfig.apply(appConfig, o).getBoolean("enabled", false);
+                  logger.info(
+                      "[processVerticle] {} enabled...{}", o.getClass().getSimpleName(), enabled);
+                  return enabled;
+                })
             .map(
                 o -> {
                   o.setRouterBuilder(routerBuilder);
