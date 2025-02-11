@@ -12,7 +12,7 @@ plugins {
 
 group = "com.anasdidi"
 
-version = "1.0.0-SNAPSHOT"
+version = "0.1.0"
 
 repositories { mavenCentral() }
 
@@ -20,6 +20,8 @@ val vertxVersion = "4.5.12"
 val junitJupiterVersion = "5.9.1"
 val log4j2Version = "2.12.4"
 val jacksonVersion = "2.18.2"
+val liquibaseVersion = "4.31.0"
+val h2Version = "2.1.210"
 
 val mainVerticleName = "com.anasdidi.superapp.MainVerticle"
 val launcherClassName = "io.vertx.core.Launcher"
@@ -41,6 +43,8 @@ dependencies {
   implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
   implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+  implementation("org.liquibase:liquibase-core:$liquibaseVersion")
+  implementation("com.h2database:h2:$h2Version")
 }
 
 java {

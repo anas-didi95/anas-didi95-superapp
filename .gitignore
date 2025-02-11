@@ -1,5 +1,6 @@
 .gradle-cache/
 .vscode-server/
+.h2/
 build/
 
 ### Vert.x ###

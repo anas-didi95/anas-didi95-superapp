@@ -23,6 +23,10 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import liquibase.Scope;
+import liquibase.command.CommandScope;
+import liquibase.exception.CommandExecutionException;
+import liquibase.resource.ClassLoaderResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -36,6 +40,7 @@ public class MainVerticle extends AbstractVerticle {
     Future<JsonObject> config = processConfig();
     Future<RouterBuilder> routerBuilder =
         config.flatMap(o -> processOpenApi(o.getJsonObject("app").getString("openApiPath")));
+    Future<Void> database = config.compose(o -> setupDatabase(o.getString("version")));
     Future<CompositeFuture> verticle =
         Future.all(config, routerBuilder)
             .compose(
@@ -45,71 +50,72 @@ public class MainVerticle extends AbstractVerticle {
                         config.result(),
                         Arrays.asList(new HelloWorldVerticle())));
 
-    verticle.onComplete(
-        o -> {
-          logger.info("[start] All verticles started...{}", verticle.isComplete());
-          Router router = routerBuilder.result().createRouter();
-          router.errorHandler(
-              404,
-              routingContext -> {
-                JsonObject errorObject =
-                    new JsonObject()
-                        .put("code", 404)
-                        .put(
-                            "message",
-                            (routingContext.failure() != null)
-                                ? routingContext.failure().getMessage()
-                                : "Not Found");
-                routingContext
-                    .response()
-                    .setStatusCode(404)
-                    .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                    .end(errorObject.encode());
-              });
-          router.errorHandler(
-              400,
-              routingContext -> {
-                JsonObject errorObject =
-                    new JsonObject()
-                        .put("code", 400)
-                        .put(
-                            "message",
-                            (routingContext.failure() != null)
-                                ? routingContext.failure().getMessage()
-                                : "Validation Exception");
-                routingContext
-                    .response()
-                    .setStatusCode(400)
-                    .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                    .end(errorObject.encode());
-              });
-          Router mainRouter = Router.router(vertx);
-          mainRouter
-              .route()
-              .handler(
-                  ctx -> {
-                    UUID traceId = UUID.randomUUID();
-                    ctx.put("traceId", traceId);
-                    ctx.next();
+    Future.all(config, routerBuilder, database, verticle)
+        .onComplete(
+            o -> {
+              logger.info("[start] All verticles started...{}", verticle.isComplete());
+              Router router = routerBuilder.result().createRouter();
+              router.errorHandler(
+                  404,
+                  routingContext -> {
+                    JsonObject errorObject =
+                        new JsonObject()
+                            .put("code", 404)
+                            .put(
+                                "message",
+                                (routingContext.failure() != null)
+                                    ? routingContext.failure().getMessage()
+                                    : "Not Found");
+                    routingContext
+                        .response()
+                        .setStatusCode(404)
+                        .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .end(errorObject.encode());
                   });
-          mainRouter.route("/*").subRouter(router);
+              router.errorHandler(
+                  400,
+                  routingContext -> {
+                    JsonObject errorObject =
+                        new JsonObject()
+                            .put("code", 400)
+                            .put(
+                                "message",
+                                (routingContext.failure() != null)
+                                    ? routingContext.failure().getMessage()
+                                    : "Validation Exception");
+                    routingContext
+                        .response()
+                        .setStatusCode(400)
+                        .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .end(errorObject.encode());
+                  });
+              Router mainRouter = Router.router(vertx);
+              mainRouter
+                  .route()
+                  .handler(
+                      ctx -> {
+                        UUID traceId = UUID.randomUUID();
+                        ctx.put("traceId", traceId);
+                        ctx.next();
+                      });
+              mainRouter.route("/*").subRouter(router);
 
-          int port = config.result().getJsonObject("app").getInteger("port");
-          vertx
-              .createHttpServer()
-              .requestHandler(mainRouter)
-              .listen(port)
-              .onComplete(
-                  oo -> {
-                    logger.info(
-                        "[start] HTTP server started on port {}...{}ms",
-                        port,
-                        System.currentTimeMillis() - timeStart);
-                    startPromise.complete();
-                  },
-                  startPromise::fail);
-        },
-        startPromise::fail);
+              int port = config.result().getJsonObject("app").getInteger("port");
+              vertx
+                  .createHttpServer()
+                  .requestHandler(mainRouter)
+                  .listen(port)
+                  .onComplete(
+                      oo -> {
+                        logger.info(
+                            "[start] HTTP server started on port {}...{}ms",
+                            port,
+                            System.currentTimeMillis() - timeStart);
+                        startPromise.complete();
+                      },
+                      startPromise::fail);
+            },
+            startPromise::fail);
   }
 
   private Future<JsonObject> processConfig() {
@@ -188,5 +194,44 @@ public class MainVerticle extends AbstractVerticle {
                 })
             .toList();
     return Future.all(deployList);
+  }
+
+  private Future<Void> setupDatabase(String version) {
+    return vertx.executeBlocking(
+        () -> {
+          logger.info("[setupDatabase] Running Liquibase...");
+          Scope.child(
+              Scope.Attr.resourceAccessor,
+              new ClassLoaderResourceAccessor(),
+              () -> {
+                try {
+                  logger.info("[setupDatabase] Liquibase rollback tag={}...", version);
+                  CommandScope rollback = new CommandScope("rollback");
+                  rollback.addArgumentValue("changelogFile", "/db/db.changelog-main.yml");
+                  rollback.addArgumentValue(
+                      "url", "jdbc:h2:./.h2/edumgmt;AUTO_SERVER=TRUE;AUTO_SERVER_PORT=9090");
+                  rollback.addArgumentValue("username", "sa");
+                  rollback.addArgumentValue("password", "sa");
+                  rollback.addArgumentValue("tag", version);
+                  rollback.execute();
+                } catch (CommandExecutionException ex) {
+                  logger.warn("[setupDatabase] Rollback skipped!", ex);
+                } finally {
+                  logger.info("[setupDatabase] Liquibase rollback tag={}...DONE", version);
+                }
+
+                logger.info("[setupDatabase] Liquibase update...");
+                CommandScope update = new CommandScope("update");
+                update.addArgumentValue("changelogFile", "/db/db.changelog-main.yml");
+                update.addArgumentValue(
+                    "url", "jdbc:h2:./.h2/edumgmt;AUTO_SERVER=TRUE;AUTO_SERVER_PORT=9090");
+                update.addArgumentValue("username", "sa");
+                update.addArgumentValue("password", "sa");
+                update.execute();
+                logger.info("[setupDatabase] Liquibase update...DONE");
+              });
+          logger.info("[setupDatabase] Running Liquibase...DONE");
+          return null;
+        });
   }
 }

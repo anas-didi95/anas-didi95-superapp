@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: db.changelog-main-0.1.0
+      author: anas
+      changes:
+        - tagDatabase:
+            tag: 0.1.0
+  - include:
+      file: /db/changelog/db.changelog-2502112044.tbl_trace_log.yml
