@@ -20,6 +20,7 @@ import io.vertx.openapi.contract.OpenAPIContract;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
@@ -83,6 +84,14 @@ public class MainVerticle extends AbstractVerticle {
                     .end(errorObject.encode());
               });
           Router mainRouter = Router.router(vertx);
+          mainRouter
+              .route()
+              .handler(
+                  ctx -> {
+                    UUID traceId = UUID.randomUUID();
+                    ctx.put("traceId", traceId);
+                    ctx.next();
+                  });
           mainRouter.route("/*").subRouter(router);
 
           int port = config.result().getJsonObject("app").getInteger("port");

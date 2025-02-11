@@ -15,9 +15,9 @@ public abstract class BaseVerticle extends AbstractVerticle {
 
   private static final Logger logger = LogManager.getLogger(BaseVerticle.class);
   protected RouterBuilder routerBuilder;
-  protected Map<String, BaseService> serviceMap;
+  protected Map<String, BaseService<?, ?>> serviceMap;
 
-  protected abstract Map<String, BaseService> setServiceMap();
+  protected abstract Map<String, BaseService<?, ?>> setServiceMap();
 
   @Override
   public final void start(Promise<Void> startPromise) throws Exception {
@@ -26,7 +26,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
     this.serviceMap = setServiceMap();
     for (OpenAPIRoute route : this.routerBuilder.getRoutes()) {
       Operation operation = route.getOperation();
-      BaseService service = this.serviceMap.get(operation.getOperationId());
+      BaseService<?, ?> service = this.serviceMap.get(operation.getOperationId());
       if (Objects.isNull(service)) {
         continue;
       }
