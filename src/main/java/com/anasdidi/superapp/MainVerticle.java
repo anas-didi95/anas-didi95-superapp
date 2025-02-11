@@ -23,10 +23,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import liquibase.Scope;
-import liquibase.command.CommandScope;
-import liquibase.exception.CommandExecutionException;
-import liquibase.resource.ClassLoaderResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -40,19 +36,16 @@ public class MainVerticle extends AbstractVerticle {
     Future<JsonObject> config = processConfig();
     Future<RouterBuilder> routerBuilder =
         config.flatMap(o -> processOpenApi(o.getJsonObject("app").getString("openApiPath")));
-    Future<Void> database =
-        config.compose(
-            o -> processDatabase(o.getString("version"), o.getString("APP_ENV", "prod")));
     Future<CompositeFuture> verticle =
         Future.all(config, routerBuilder)
             .compose(
                 o ->
                     processVerticle(
                         routerBuilder.result(),
-                        config.result().getJsonObject("app").getJsonObject("verticle"),
+                        config.result(),
                         Arrays.asList(new HelloWorldVerticle())));
 
-    Future.all(config, routerBuilder, database, verticle)
+    Future.all(config, routerBuilder, verticle)
         .onComplete(
             o -> {
               logger.info("[start] All verticles started...{}", verticle.isComplete());
@@ -175,7 +168,7 @@ public class MainVerticle extends AbstractVerticle {
   private CompositeFuture processVerticle(
       RouterBuilder routerBuilder, JsonObject appConfig, List<BaseVerticle> verticleList) {
     BiFunction<JsonObject, BaseVerticle, JsonObject> vtxConfig =
-        (o1, o2) -> o1.getJsonObject(o2.getClass().getSimpleName());
+        (o1, o2) -> o1.getJsonObject("app").getJsonObject("verticle").getJsonObject(o2.getClass().getSimpleName());
 
     List<Future<String>> deployList =
         verticleList.stream()
@@ -190,49 +183,15 @@ public class MainVerticle extends AbstractVerticle {
                 o -> {
                   o.setRouterBuilder(routerBuilder);
                   return vertx.deployVerticle(
-                      o, new DeploymentOptions().setConfig(vtxConfig.apply(appConfig, o)));
+                      o,
+                      new DeploymentOptions()
+                          .setConfig(
+                              vtxConfig
+                                  .apply(appConfig, o)
+                                  .put("version", appConfig.getString("version"))
+                                  .put("env", appConfig.getString("APP_ENV", "prod"))));
                 })
             .toList();
     return Future.all(deployList);
-  }
-
-  private Future<Void> processDatabase(String version, String env) {
-    return vertx.executeBlocking(
-        () -> {
-          long timeStart = System.currentTimeMillis();
-          logger.info("[processDatabase] Liquibase env...{}", env);
-          Scope.child(
-              Scope.Attr.resourceAccessor,
-              new ClassLoaderResourceAccessor(),
-              () -> {
-                if (env.equals("dev")) {
-                  try {
-                    logger.info("[processDatabase] Liquibase rollback tag...{}", version);
-                    CommandScope rollback = new CommandScope("rollback");
-                    rollback.addArgumentValue("changelogFile", "/db/db.changelog-main.yml");
-                    rollback.addArgumentValue(
-                        "url", "jdbc:h2:./.h2/edumgmt;AUTO_SERVER=TRUE;AUTO_SERVER_PORT=9090");
-                    rollback.addArgumentValue("username", "sa");
-                    rollback.addArgumentValue("password", "sa");
-                    rollback.addArgumentValue("tag", version);
-                    rollback.execute();
-                  } catch (CommandExecutionException ex) {
-                    logger.warn("[processDatabase] Rollback skipped!", ex);
-                  }
-                }
-
-                logger.info("[processDatabase] Liquibase update...");
-                CommandScope update = new CommandScope("update");
-                update.addArgumentValue("changelogFile", "/db/db.changelog-main.yml");
-                update.addArgumentValue(
-                    "url", "jdbc:h2:./.h2/edumgmt;AUTO_SERVER=TRUE;AUTO_SERVER_PORT=9090");
-                update.addArgumentValue("username", "sa");
-                update.addArgumentValue("password", "sa");
-                update.execute();
-              });
-          logger.info(
-              "[processDatabase] Running Liquibase...{}ms", System.currentTimeMillis() - timeStart);
-          return null;
-        });
   }
 }

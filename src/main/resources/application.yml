@@ -5,3 +5,7 @@ app:
   verticle:
     HelloWorldVerticle:
       enabled: true
+      db:
+        url: jdbc:h2:./.h2/helloworld;AUTO_SERVER=TRUE;AUTO_SERVER_PORT=9090
+        username: sa
+        password: sa

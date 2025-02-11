@@ -12,8 +12,13 @@ import java.util.stream.Collectors;
 public class HelloWorldVerticle extends BaseVerticle {
 
   @Override
-  protected Map<String, BaseService<?, ?>> setServiceMap() {
+  protected Map<String, BaseService<?, ?>> getServiceMap() {
     return Arrays.asList(new GreetingService()).stream()
         .collect(Collectors.toMap(o -> o.getOperationId(), Function.identity()));
+  }
+
+  @Override
+  protected String getLiquibaseLabel() {
+    return "tracelog";
   }
 }
