@@ -1,3 +1,7 @@
 app:
   port: 8888
   openApiPath: openapi.yml
+
+  verticle:
+    HelloWorldVerticle:
+      name: asdf

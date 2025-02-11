@@ -1,6 +1,7 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
 package com.anasdidi.superapp;
 
+import com.anasdidi.superapp.common.BaseVerticle;
 import com.anasdidi.superapp.helloworld.HelloWorldVerticle;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -18,6 +19,7 @@ import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.openapi.contract.OpenAPIContract;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,61 +36,70 @@ public class MainVerticle extends AbstractVerticle {
         config.flatMap(o -> processOpenApi(o.getJsonObject("app").getString("openApiPath")));
     Future<CompositeFuture> verticle =
         Future.all(config, routerBuilder)
-            .compose(o -> processVerticle(routerBuilder.result(), config.result()));
+            .compose(
+                o ->
+                    processVerticle(
+                        routerBuilder.result(),
+                        config.result(),
+                        Arrays.asList(new HelloWorldVerticle())));
 
-    Future.all(config, routerBuilder, verticle)
-        .onComplete(
-            o -> {
-              Router router = routerBuilder.result().createRouter();
-              router.errorHandler(
-                  404,
-                  routingContext -> {
-                    JsonObject errorObject =
-                        new JsonObject()
-                            .put("code", 404)
-                            .put(
-                                "message",
-                                (routingContext.failure() != null)
-                                    ? routingContext.failure().getMessage()
-                                    : "Not Found");
-                    routingContext
-                        .response()
-                        .setStatusCode(404)
-                        .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                        .end(errorObject.encode());
-                  });
-              router.errorHandler(
-                  400,
-                  routingContext -> {
-                    JsonObject errorObject =
-                        new JsonObject()
-                            .put("code", 400)
-                            .put(
-                                "message",
-                                (routingContext.failure() != null)
-                                    ? routingContext.failure().getMessage()
-                                    : "Validation Exception");
-                    routingContext
-                        .response()
-                        .setStatusCode(400)
-                        .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                        .end(errorObject.encode());
-                  });
-              Router mainRouter = Router.router(vertx);
-              mainRouter.route("/*").subRouter(router);
+    verticle.onComplete(
+        o -> {
+          logger.info("[start] All modules started...{}", verticle.isComplete());
+          Router router = routerBuilder.result().createRouter();
+          router.errorHandler(
+              404,
+              routingContext -> {
+                JsonObject errorObject =
+                    new JsonObject()
+                        .put("code", 404)
+                        .put(
+                            "message",
+                            (routingContext.failure() != null)
+                                ? routingContext.failure().getMessage()
+                                : "Not Found");
+                routingContext
+                    .response()
+                    .setStatusCode(404)
+                    .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                    .end(errorObject.encode());
+              });
+          router.errorHandler(
+              400,
+              routingContext -> {
+                JsonObject errorObject =
+                    new JsonObject()
+                        .put("code", 400)
+                        .put(
+                            "message",
+                            (routingContext.failure() != null)
+                                ? routingContext.failure().getMessage()
+                                : "Validation Exception");
+                routingContext
+                    .response()
+                    .setStatusCode(400)
+                    .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                    .end(errorObject.encode());
+              });
+          Router mainRouter = Router.router(vertx);
+          mainRouter.route("/*").subRouter(router);
 
-              int port = config.result().getJsonObject("app").getInteger("port");
-              vertx
-                  .createHttpServer()
-                  .requestHandler(mainRouter)
-                  .listen(port)
-                  .onComplete(
-                      oo -> {
-                        logger.info("[start] HTTP server started on port {}...{}ms", port, System.currentTimeMillis() - timeStart);
-                        startPromise.complete();
-                      },
-                      startPromise::fail);
-            });
+          int port = config.result().getJsonObject("app").getInteger("port");
+          vertx
+              .createHttpServer()
+              .requestHandler(mainRouter)
+              .listen(port)
+              .onComplete(
+                  oo -> {
+                    logger.info(
+                        "[start] HTTP server started on port {}...{}ms",
+                        port,
+                        System.currentTimeMillis() - timeStart);
+                    startPromise.complete();
+                  },
+                  startPromise::fail);
+        },
+        startPromise::fail);
   }
 
   private Future<JsonObject> processConfig() {
@@ -131,11 +142,22 @@ public class MainVerticle extends AbstractVerticle {
             oo -> logger.error("[processOpenApi] Fail to build router builder!", oo));
   }
 
-  private CompositeFuture processVerticle(RouterBuilder routerBuilder, JsonObject config) {
-    List<Future<String>> verticle =
-        Arrays.asList(
-            vertx.deployVerticle(
-                new HelloWorldVerticle(routerBuilder), new DeploymentOptions().setConfig(config)));
-    return Future.all(verticle);
+  private CompositeFuture processVerticle(
+      RouterBuilder routerBuilder, JsonObject appConfig, List<BaseVerticle> verticleList) {
+    BiFunction<JsonObject, BaseVerticle, JsonObject> vtxConfig =
+        (o1, o2) ->
+            o1.getJsonObject("app")
+                .getJsonObject("verticle")
+                .getJsonObject(o2.getClass().getSimpleName());
+    List<Future<String>> deployList =
+        verticleList.stream()
+            .map(
+                o -> {
+                  o.setRouterBuilder(routerBuilder);
+                  return vertx.deployVerticle(
+                      o, new DeploymentOptions().setConfig(vtxConfig.apply(appConfig, o)));
+                })
+            .toList();
+    return Future.all(deployList);
   }
 }

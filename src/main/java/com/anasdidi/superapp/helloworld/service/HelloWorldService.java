@@ -1,6 +1,7 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
 package com.anasdidi.superapp.helloworld.service;
 
+import com.anasdidi.superapp.common.BaseService;
 import com.anasdidi.superapp.helloworld.dto.HelloWorldBaseReqDto;
 import com.anasdidi.superapp.helloworld.dto.HelloWorldBaseResDto;
 import io.vertx.core.json.JsonObject;
@@ -11,7 +12,8 @@ import io.vertx.openapi.validation.ValidatedRequest;
 import java.util.Map;
 
 public abstract class HelloWorldService<
-    A extends HelloWorldBaseReqDto, B extends HelloWorldBaseResDto> {
+        A extends HelloWorldBaseReqDto, B extends HelloWorldBaseResDto>
+    implements BaseService {
 
   private final Class<A> bodyClass;
 
