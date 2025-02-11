@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import java.io.ByteArrayOutputStream
 import java.util.Properties
 import org.gradle.api.tasks.testing.logging.TestLogEvent.*
 
@@ -94,6 +95,15 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   }
 }
 
+val commitId: String by lazy {
+  val stdout = ByteArrayOutputStream()
+  rootProject.exec {
+    commandLine("git", "rev-parse", "--short", "HEAD")
+    standardOutput = stdout
+  }
+  stdout.toString().trim()
+}
+
 tasks.register("createProperties") {
   dependsOn(tasks.processResources)
 
@@ -104,6 +114,7 @@ tasks.register("createProperties") {
     versionFile.printWriter().use { writer ->
       val properties = Properties()
       properties["version"] = project.version.toString()
+      properties["commitId"] = commitId
       properties.store(writer, null)
     }
   }
