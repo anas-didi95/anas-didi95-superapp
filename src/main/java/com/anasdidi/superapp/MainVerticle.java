@@ -19,6 +19,7 @@ import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.openapi.contract.OpenAPIContract;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
@@ -121,10 +122,21 @@ public class MainVerticle extends AbstractVerticle {
                                     .setOptional(false)
                                     .setType("file")
                                     .setFormat("yaml")
-                                    .setConfig(new JsonObject().put("path", configPath.apply(o)))))
+                                    .setConfig(JsonObject.of("path", configPath.apply(o))))
+                            .addStore(
+                                new ConfigStoreOptions()
+                                    .setOptional(false)
+                                    .setType("file")
+                                    .setFormat("properties")
+                                    .setConfig(JsonObject.of("path", "version.properties"))))
                     .getConfig()
                     .onComplete(
-                        oo -> logger.info("[processConfig] Get app config..."),
+                        oo -> {
+                          logger.info(
+                              "[processConfig] Get app config...{}",
+                              Objects.nonNull(oo.getJsonObject("app")));
+                          logger.info("[processConfig] Get version...{}", oo.getString("version"));
+                        },
                         oo -> logger.error("Fail to get app config!", oo)));
   }
 
@@ -138,7 +150,7 @@ public class MainVerticle extends AbstractVerticle {
                 Future.succeededFuture(
                     RouterBuilder.create(vertx, o, RequestExtractor.withBodyHandler())))
         .onComplete(
-            oo -> logger.info("[processOpenApi] Build router builder..."),
+            oo -> logger.info("[processOpenApi] Build router builder...{}", Objects.nonNull(oo)),
             oo -> logger.error("[processOpenApi] Fail to build router builder!", oo));
   }
 
