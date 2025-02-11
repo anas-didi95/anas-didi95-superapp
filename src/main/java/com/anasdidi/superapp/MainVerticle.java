@@ -2,6 +2,10 @@
 package com.anasdidi.superapp;
 
 import com.anasdidi.superapp.helloworld.HelloWorldVerticle;
+
+import io.vertx.config.ConfigRetriever;
+import io.vertx.config.ConfigRetrieverOptions;
+import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -20,7 +24,7 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
-    int port = 8888;
+    Future<JsonObject> configRetriever = ConfigRetriever.create(vertx, new ConfigRetrieverOptions().addStore(new ConfigStoreOptions().setType("file").setFormat("yaml").setConfig(new JsonObject().put("path", "application.yml")))).getConfig();
     String openApiContractPath = "openapi.yml";
     Future<RouterBuilder> openApi =
         OpenAPIContract.from(vertx, openApiContractPath)
@@ -37,11 +41,12 @@ public class MainVerticle extends AbstractVerticle {
             .onComplete(o -> System.out.println("ONCOMPLETE"))
             .onFailure(o -> System.err.println(o));
 
-    Future.all(openApi, helloWorld)
+    Future.all(openApi, helloWorld, configRetriever)
         .onSuccess(
             o -> {
-              System.out.println("Verticle " + o.result().resultAt(1));
-              RouterBuilder routerBuilder = o.result().resultAt(0);
+              int port = configRetriever.result().getJsonObject("app").getInteger("port");
+              System.out.println("Verticle " + o.resultAt(1));
+              RouterBuilder routerBuilder = o.resultAt(0);
               Router router = routerBuilder.createRouter();
               router.errorHandler(
                   404,
