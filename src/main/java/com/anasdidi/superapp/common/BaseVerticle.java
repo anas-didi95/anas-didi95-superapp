@@ -8,6 +8,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.openapi.router.OpenAPIRoute;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.openapi.contract.Operation;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import liquibase.Scope;
@@ -28,7 +29,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
 
   protected abstract Map<String, BaseService<?, ?>> getServiceMap();
 
-  protected abstract String getLiquibaseLabel();
+  protected abstract List<String> getLiquibaseLabel();
 
   @Override
   public final void start(Promise<Void> startPromise) throws Exception {
@@ -79,6 +80,8 @@ public abstract class BaseVerticle extends AbstractVerticle {
           String version = config().getString("version");
           String env = config().getString("env");
           JsonObject db = config().getJsonObject("db");
+          String labels = String.join(",", getLiquibaseLabel());
+          String argChangelog = CommonArgumentNames.CHANGELOG_FILE.getArgumentName();
           String argUrl = CommonArgumentNames.URL.getArgumentName();
           String argUsername = CommonArgumentNames.USERNAME.getArgumentName();
           String argPassword = CommonArgumentNames.PASSWORD.getArgumentName();
@@ -96,9 +99,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
                         this.getClass().getSimpleName(),
                         version);
                     CommandScope rollback = new CommandScope("rollback");
-                    rollback.addArgumentValue(
-                        CommonArgumentNames.CHANGELOG_FILE.getArgumentName(),
-                        "/db/db.changelog-main.yml");
+                    rollback.addArgumentValue(argChangelog, "/db/db.changelog-main.yml");
                     rollback.addArgumentValue(argUrl, db.getString(argUrl));
                     rollback.addArgumentValue(argUsername, db.getString(argUsername));
                     rollback.addArgumentValue(argPassword, db.getString(argPassword));
@@ -116,13 +117,11 @@ public abstract class BaseVerticle extends AbstractVerticle {
                     this.getClass().getSimpleName(),
                     getLiquibaseLabel());
                 CommandScope update = new CommandScope("update");
-                update.addArgumentValue(
-                    CommonArgumentNames.CHANGELOG_FILE.getArgumentName(),
-                    "/db/db.changelog-main.yml");
+                update.addArgumentValue(argChangelog, "/db/db.changelog-main.yml");
                 update.addArgumentValue(argUrl, db.getString(argUrl));
                 update.addArgumentValue(argUsername, db.getString(argUsername));
                 update.addArgumentValue(argPassword, db.getString(argPassword));
-                update.addArgumentValue(UpdateCommandStep.LABEL_FILTER_ARG, getLiquibaseLabel());
+                update.addArgumentValue(UpdateCommandStep.LABEL_FILTER_ARG, labels);
                 update.execute();
               });
           logger.info(

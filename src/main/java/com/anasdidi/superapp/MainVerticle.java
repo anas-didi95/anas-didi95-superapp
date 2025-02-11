@@ -168,7 +168,10 @@ public class MainVerticle extends AbstractVerticle {
   private CompositeFuture processVerticle(
       RouterBuilder routerBuilder, JsonObject appConfig, List<BaseVerticle> verticleList) {
     BiFunction<JsonObject, BaseVerticle, JsonObject> vtxConfig =
-        (o1, o2) -> o1.getJsonObject("app").getJsonObject("verticle").getJsonObject(o2.getClass().getSimpleName());
+        (o1, o2) ->
+            o1.getJsonObject("app")
+                .getJsonObject("verticle")
+                .getJsonObject(o2.getClass().getSimpleName());
 
     List<Future<String>> deployList =
         verticleList.stream()

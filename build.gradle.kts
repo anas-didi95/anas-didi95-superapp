@@ -88,10 +88,10 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     formatAnnotations()
     licenseHeader("/* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */")
   }
-  groovyGradle {
-    target("*.gradle") // default target of groovyGradle
-    greclipse()
-  }
+  // groovyGradle {
+  //  target("*.gradle") // default target of groovyGradle
+  //  greclipse()
+  // }
   kotlinGradle {
     target("*.gradle.kts") // default target for kotlinGradle
     ktfmt()

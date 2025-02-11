@@ -5,6 +5,7 @@ import com.anasdidi.superapp.common.BaseService;
 import com.anasdidi.superapp.common.BaseVerticle;
 import com.anasdidi.superapp.verticle.helloworld.service.impl.GreetingService;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -18,7 +19,7 @@ public class HelloWorldVerticle extends BaseVerticle {
   }
 
   @Override
-  protected String getLiquibaseLabel() {
-    return "tracelog";
+  protected List<String> getLiquibaseLabel() {
+    return Arrays.asList("helloworld");
   }
 }
