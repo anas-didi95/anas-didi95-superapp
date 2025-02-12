@@ -1,6 +1,7 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
 package com.anasdidi.superapp.common;
 
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
@@ -43,6 +44,8 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     logger.info("[{}] END...{}ms", tag, System.currentTimeMillis() - timeStart);
     ctx.response().end(JsonObject.mapFrom(result).encode());
   }
+
+  public void process(Message<Object> msg) {}
 
   protected JsonObject prepareQuery(Map<String, RequestParameter> query) {
     return JsonObject.of();

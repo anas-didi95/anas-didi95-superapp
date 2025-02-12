@@ -12,3 +12,4 @@ app:
       handler:
         greeting:
           enabled: true
+          eventType: GREET

@@ -37,11 +37,11 @@ public abstract class BaseVerticle extends AbstractVerticle {
     this.serviceMap = getServiceMap();
     this.handlerMap = config().getJsonObject("handler").getMap();
 
-    Future.all(processRouter(), processDatabase())
+    Future.all(processDatabase(), processRouter(), processEventBus())
         .onComplete(
             o -> {
               logger.info(
-                  "[{}:start] Verticle started...{}ms",
+                  "[{}:start] Verticle ready...{}ms",
                   this.getClass().getSimpleName(),
                   System.currentTimeMillis() - timeStart);
               startPromise.complete();
@@ -56,6 +56,8 @@ public abstract class BaseVerticle extends AbstractVerticle {
   private Future<Void> processRouter() {
     return Future.future(
         promise -> {
+          long timeStart = System.currentTimeMillis();
+
           for (Map.Entry<String, Object> handler : this.handlerMap.entrySet()) {
             String key = handler.getKey();
             JsonObject value = (JsonObject) handler.getValue();
@@ -89,8 +91,65 @@ public abstract class BaseVerticle extends AbstractVerticle {
                 "[{}:processRouter] Register route {}...{}",
                 this.getClass().getSimpleName(),
                 route.get().getOperation().getOpenAPIPath(),
-                route.get().getOperation().getOperationId());
+                key);
           }
+
+          logger.info(
+              "[{}:processRouter] Router ready...{}ms",
+              this.getClass().getSimpleName(),
+              System.currentTimeMillis() - timeStart);
+          promise.complete();
+        });
+  }
+
+  private Future<Void> processEventBus() {
+    return Future.future(
+        promise -> {
+          long timeStart = System.currentTimeMillis();
+
+          for (Map.Entry<String, Object> handler : this.handlerMap.entrySet()) {
+            String key = handler.getKey();
+            JsonObject value = (JsonObject) handler.getValue();
+
+            if (!value.getBoolean("enabled", false)) {
+              logger.warn(
+                  "[{}, processEventBus] Handler not enabled...{}",
+                  this.getClass().getSimpleName(),
+                  key);
+              continue;
+            }
+
+            Optional<String> eventType = Optional.ofNullable(value.getString("eventType"));
+            if (eventType.isEmpty()) {
+              logger.warn(
+                  "[{}:processEventBus] Event type not defined...{}",
+                  this.getClass().getSimpleName(),
+                  key);
+              continue;
+            }
+
+            Optional<BaseService<?, ?>> service = Optional.ofNullable(this.serviceMap.get(key));
+            if (service.isEmpty()) {
+              logger.warn(
+                  "[{}:processRouter] Service not found...{}",
+                  this.getClass().getSimpleName(),
+                  key);
+              continue;
+            }
+
+            String address = "%s:%s".formatted(this.getClass().getSimpleName(), eventType.get());
+            vertx.eventBus().consumer(address).handler(msg -> service.get().process(msg));
+            logger.info(
+                "[{}:processEventBus] Register event bus {}...{}",
+                this.getClass().getSimpleName(),
+                address,
+                key);
+          }
+
+          logger.info(
+              "[{}:processEventBus] Event bus ready...{}ms",
+              this.getClass().getSimpleName(),
+              System.currentTimeMillis() - timeStart);
           promise.complete();
         });
   }
@@ -147,7 +206,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
                 update.execute();
               });
           logger.info(
-              "[{}:processDatabase] Running Liquibase...{}ms",
+              "[{}:processDatabase] Liquibase ready...{}ms",
               this.getClass().getSimpleName(),
               System.currentTimeMillis() - timeStart);
           return null;
