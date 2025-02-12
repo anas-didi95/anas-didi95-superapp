@@ -7,10 +7,9 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.openapi.router.OpenAPIRoute;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
-import io.vertx.openapi.contract.Operation;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import liquibase.Scope;
 import liquibase.command.CommandScope;
 import liquibase.command.CommonArgumentNames;
@@ -26,6 +25,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
   private static final Logger logger = LogManager.getLogger(BaseVerticle.class);
   private RouterBuilder routerBuilder;
   private Map<String, BaseService<?, ?>> serviceMap;
+  private Map<String, Object> handlerMap;
 
   protected abstract Map<String, BaseService<?, ?>> getServiceMap();
 
@@ -34,6 +34,8 @@ public abstract class BaseVerticle extends AbstractVerticle {
   @Override
   public final void start(Promise<Void> startPromise) throws Exception {
     long timeStart = System.currentTimeMillis();
+    this.serviceMap = getServiceMap();
+    this.handlerMap = config().getJsonObject("handler").getMap();
 
     Future.all(processRouter(), processDatabase())
         .onComplete(
@@ -54,20 +56,40 @@ public abstract class BaseVerticle extends AbstractVerticle {
   private Future<Void> processRouter() {
     return Future.future(
         promise -> {
-          this.serviceMap = getServiceMap();
+          for (Map.Entry<String, Object> handler : this.handlerMap.entrySet()) {
+            String key = handler.getKey();
+            JsonObject value = (JsonObject) handler.getValue();
 
-          for (OpenAPIRoute route : this.routerBuilder.getRoutes()) {
-            Operation operation = route.getOperation();
-            BaseService<?, ?> service = this.serviceMap.get(operation.getOperationId());
-            if (Objects.isNull(service)) {
+            if (!value.getBoolean("enabled", false)) {
+              logger.warn(
+                  "[{}:processRouter] Handler not enabled...{}",
+                  this.getClass().getSimpleName(),
+                  key);
               continue;
             }
-            route.addHandler(service::process);
+
+            Optional<OpenAPIRoute> route = Optional.ofNullable(this.routerBuilder.getRoute(key));
+            if (route.isEmpty()) {
+              logger.warn(
+                  "[{}:processRouter] Route not found...{}", this.getClass().getSimpleName(), key);
+              continue;
+            }
+
+            Optional<BaseService<?, ?>> service = Optional.ofNullable(this.serviceMap.get(key));
+            if (service.isEmpty()) {
+              logger.warn(
+                  "[{}:processRouter] Service not found...{}",
+                  this.getClass().getSimpleName(),
+                  key);
+              continue;
+            }
+
+            route.get().addHandler(ctx -> service.get().process(ctx));
             logger.info(
-                "[{}:start] Register route {}...{}",
+                "[{}:processRouter] Register route {}...{}",
                 this.getClass().getSimpleName(),
-                operation.getOpenAPIPath(),
-                operation.getOperationId());
+                route.get().getOperation().getOpenAPIPath(),
+                route.get().getOperation().getOperationId());
           }
           promise.complete();
         });
