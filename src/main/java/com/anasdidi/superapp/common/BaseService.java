@@ -23,7 +23,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
   protected abstract String getOperationId();
 
-  protected abstract B handle(A body, JsonObject path, JsonObject query);
+  protected abstract B handle(InboundDto<A> dto);
 
   public void process(RoutingContext ctx) {
     UUID traceId = ctx.get("traceId");
@@ -37,9 +37,11 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     JsonObject query = prepareQuery(validatedRequest.getQuery());
     JsonObject path = preparePath(validatedRequest.getPathParameters());
 
-    logger.info("[{}] body={}, path={}, query={}", tag, body, path, query);
-    B result = handle(body, path, query);
-    logger.info("[{}] result={}", tag, result);
+    InboundDto<A> dto = new InboundDto<A>(body, path, query);
+    logger.info("[{}] IN :: {}", tag, dto);
+
+    B result = handle(dto);
+    logger.info("[{}] OUT :: {}", tag, result);
 
     logger.info("[{}] END...{}ms", tag, System.currentTimeMillis() - timeStart);
     ctx.response().end(JsonObject.mapFrom(result).encode());
@@ -54,4 +56,6 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
   protected JsonObject preparePath(Map<String, RequestParameter> path) {
     return JsonObject.of();
   }
+
+  public static record InboundDto<A>(A body, JsonObject path, JsonObject query) {}
 }

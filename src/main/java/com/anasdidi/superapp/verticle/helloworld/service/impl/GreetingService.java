@@ -20,9 +20,8 @@ public class GreetingService
   }
 
   @Override
-  protected HelloWorldGreetingResDto handle(
-      HelloWorldGreetingReqDto body, JsonObject path, JsonObject query) {
-    String lang = query.getString("lang", "eng");
+  protected HelloWorldGreetingResDto handle(InboundDto<HelloWorldGreetingReqDto> dto) {
+    String lang = dto.query().getString("lang", "eng");
     String value =
         switch (lang) {
           case "eng" -> "Welcome.";
