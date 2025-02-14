@@ -30,37 +30,22 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: TYPE
-                  type: VARCHAR(10)
+                  name: ORIGIN
+                  type: VARCHAR(100)
                   constraints:
                     nullable: false
               - column:
-                  name: TYPE_VAL
-                  type: VARCHAR(30)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: BODY
+                  name: IN
                   type: CLOB
                   constraints:
                     nullable: false
-              - column:
-                  name: PATH
-                  type: CLOB
-                  constraints:
-                    nullable: true
-              - column:
-                  name: QUERY
-                  type: CLOB
-                  constraints:
-                    nullable: true
               - column:
                   name: OPTS
                   type: CLOB
                   constraints:
                     nullable: true
               - column:
-                  name: RESULT
+                  name: OUT
                   type: CLOB
                   constraints:
                     nullable: true
@@ -68,4 +53,4 @@ databaseChangeLog:
                   name: ERR
                   type: CLOB
                   constraints:
-                    nullable: true
+                    nullable: TRUE
