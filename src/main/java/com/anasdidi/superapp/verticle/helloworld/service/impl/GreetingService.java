@@ -4,6 +4,8 @@ package com.anasdidi.superapp.verticle.helloworld.service.impl;
 import com.anasdidi.superapp.verticle.helloworld.dto.HelloWorldGreetingReqDto;
 import com.anasdidi.superapp.verticle.helloworld.dto.HelloWorldGreetingResDto;
 import com.anasdidi.superapp.verticle.helloworld.service.HelloWorldService;
+import io.vertx.core.MultiMap;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.validation.RequestParameter;
 import java.util.Map;
@@ -11,12 +13,12 @@ import java.util.Map;
 public class GreetingService
     extends HelloWorldService<HelloWorldGreetingReqDto, HelloWorldGreetingResDto> {
 
-  public GreetingService() {
-    super(HelloWorldGreetingReqDto.class);
+  public GreetingService(EventBus eventBus) {
+    this(HelloWorldGreetingReqDto.class, eventBus);
   }
 
-  public GreetingService(Class<HelloWorldGreetingReqDto> bodyClass) {
-    super(bodyClass);
+  public GreetingService(Class<HelloWorldGreetingReqDto> bodyClass, EventBus eventBus) {
+    super(bodyClass, eventBus);
   }
 
   @Override
@@ -32,12 +34,17 @@ public class GreetingService
   }
 
   @Override
+  protected JsonObject prepareQuery(Map<String, RequestParameter> query) {
+    return JsonObject.of("lang", query.get("lang").getString("eng"));
+  }
+
+  @Override
   public String getOperationId() {
     return "greeting";
   }
 
   @Override
-  protected JsonObject prepareQuery(Map<String, RequestParameter> query) {
-    return JsonObject.of("lang", query.get("lang").getString("eng"));
+  protected HelloWorldGreetingReqDto parseMessage(JsonObject body, MultiMap headers) {
+    throw new UnsupportedOperationException("Unimplemented method 'parseMessage'");
   }
 }

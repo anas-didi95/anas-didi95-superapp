@@ -9,6 +9,7 @@ import io.vertx.ext.web.openapi.router.OpenAPIRoute;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import liquibase.Scope;
 import liquibase.command.CommandScope;
@@ -131,13 +132,13 @@ public abstract class BaseVerticle extends AbstractVerticle {
             Optional<BaseService<?, ?>> service = Optional.ofNullable(this.serviceMap.get(key));
             if (service.isEmpty()) {
               logger.warn(
-                  "[{}:processRouter] Service not found...{}",
+                  "[{}:processEventBus] Service not found...{}",
                   this.getClass().getSimpleName(),
                   key);
               continue;
             }
 
-            String address = "%s:%s".formatted(this.getClass().getSimpleName(), eventType.get());
+            String address = CommonUtils.prepareEventBusAddress(this.getClass(), eventType.get());
             vertx.eventBus().consumer(address).handler(msg -> service.get().process(msg));
             logger.info(
                 "[{}:processEventBus] Register event bus {}...{}",
@@ -167,6 +168,12 @@ public abstract class BaseVerticle extends AbstractVerticle {
           String argUsername = CommonArgumentNames.USERNAME.getArgumentName();
           String argPassword = CommonArgumentNames.PASSWORD.getArgumentName();
 
+          if (Objects.isNull(db)) {
+            logger.warn(
+                "[{}:processDatabase] Db config missing...skip", this.getClass().getSimpleName());
+            return null;
+          }
+
           logger.info(
               "[{}:processDatabase] Liquibase env...{}", this.getClass().getSimpleName(), env);
           Scope.child(
@@ -188,7 +195,8 @@ public abstract class BaseVerticle extends AbstractVerticle {
                     rollback.execute();
                   } catch (CommandExecutionException ex) {
                     logger.warn(
-                        "[{}:processDatabase] Rollback skipped!", this.getClass().getSimpleName());
+                        "[{}:processDatabase] Rollback failing...skip",
+                        this.getClass().getSimpleName());
                     logger.warn("", ex);
                   }
                 }

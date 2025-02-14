@@ -13,3 +13,9 @@ app:
         greeting:
           enabled: true
           eventType: GREET
+    TraceLogVerticle:
+      enabled: true
+      handler:
+        saveLog:
+          enabled: true
+          eventType: SAVE_LOG

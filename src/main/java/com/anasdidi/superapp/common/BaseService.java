@@ -1,6 +1,10 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
 package com.anasdidi.superapp.common;
 
+import com.anasdidi.superapp.verticle.tracelog.TraceLogVerticle;
+import io.vertx.core.MultiMap;
+import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -8,7 +12,6 @@ import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.openapi.validation.ValidatedRequest;
 import java.util.Map;
-import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,38 +19,64 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
   private static final Logger logger = LogManager.getLogger(BaseService.class);
   private final Class<A> bodyClass;
+  private final EventBus eventBus;
 
-  public BaseService(Class<A> bodyClass) {
+  public BaseService(Class<A> bodyClass, EventBus eventBus) {
     this.bodyClass = bodyClass;
+    this.eventBus = eventBus;
   }
 
-  protected abstract String getOperationId();
+  public abstract String getOperationId();
 
   protected abstract B handle(InboundDto<A> dto);
 
-  public void process(RoutingContext ctx) {
-    UUID traceId = ctx.get("traceId");
-    String tag = "%s:%s:%s".formatted(traceId, this.getClass().getSimpleName(), getOperationId());
+  protected abstract A parseMessage(JsonObject body, MultiMap headers);
 
+  public void process(RoutingContext ctx) {
+    String traceId = ctx.get("traceId");
     long timeStart = System.currentTimeMillis();
-    logger.info("[{}] START...", tag);
+    logger.info("{} START...", getTag(traceId));
 
     ValidatedRequest validatedRequest = ctx.get(RouterBuilder.KEY_META_DATA_VALIDATED_REQUEST);
     A body = JsonObject.mapFrom(validatedRequest.getBody()).mapTo(bodyClass);
     JsonObject query = prepareQuery(validatedRequest.getQuery());
     JsonObject path = preparePath(validatedRequest.getPathParameters());
 
-    InboundDto<A> dto = new InboundDto<A>(body, path, query);
-    logger.info("[{}] IN :: {}", tag, dto);
+    InboundDto<A> in = new InboundDto<>(body, path, query);
+    logger.info("{} IN :: {}", getTag(traceId), in);
 
-    B result = handle(dto);
-    logger.info("[{}] OUT :: {}", tag, result);
-
-    logger.info("[{}] END...{}ms", tag, System.currentTimeMillis() - timeStart);
+    B result = handle(in);
+    logger.info("{} RESULT :: {}", getTag(traceId), result);
     ctx.response().end(JsonObject.mapFrom(result).encode());
+
+    OutboundDto<B> out = new OutboundDto<>(result);
+    logger.info("{} OUT :: {}", getTag(traceId), out);
+
+    eventBus.publish(
+        CommonUtils.prepareEventBusAddress(TraceLogVerticle.class, "SAVE_LOG"),
+        JsonObject.of("in", JsonObject.mapFrom(in), "out", JsonObject.mapFrom(out)),
+        new DeliveryOptions()
+            .addHeader(
+                "EV_ORIGIN", "%s:%s".formatted(this.getClass().getSimpleName(), getOperationId()))
+            .addHeader("EV_TRACEID", traceId));
+    logger.info("{} END...{}ms", getTag(traceId), System.currentTimeMillis() - timeStart);
   }
 
-  public void process(Message<Object> msg) {}
+  public void process(Message<Object> msg) {
+    String traceId = msg.headers().get("EV_TRACEID");
+    String origin = msg.headers().get("EV_ORIGIN");
+    long timeStart = System.currentTimeMillis();
+    logger.info("{} START...origin={}", getTag(traceId), origin);
+
+    A message = parseMessage((JsonObject) msg.body(), msg.headers());
+    InboundDto<A> in = new InboundDto<>(message, null, null);
+    logger.info("{} IN :: {}", getTag(traceId), in);
+
+    B result = handle(in);
+    logger.info("{} RESULT :: {}", getTag(traceId), result);
+
+    logger.info("{} END...{}ms", getTag(traceId), origin, System.currentTimeMillis() - timeStart);
+  }
 
   protected JsonObject prepareQuery(Map<String, RequestParameter> query) {
     return JsonObject.of();
@@ -58,4 +87,10 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
   }
 
   public static record InboundDto<A>(A body, JsonObject path, JsonObject query) {}
+
+  public static record OutboundDto<B>(B result) {}
+
+  private String getTag(String traceId) {
+    return "[%s:%s:%s]".formatted(traceId, this.getClass().getSimpleName(), getOperationId());
+  }
 }

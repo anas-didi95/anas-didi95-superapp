@@ -6,7 +6,7 @@ info:
     **Anas Juwaidi's SuperApp**
   termsOfService: http://swagger.io/terms/
   contact:
-    email: anas.didi95@tutomail.com
+    email: anas.didi95@tutamail.com
   version: 0.1.0
 
 servers:
@@ -33,7 +33,7 @@ paths:
             type: string
       responses:
         "200":
-          description: OK
+          description: Success
 
 components:
   schemas:

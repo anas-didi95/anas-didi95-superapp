@@ -3,6 +3,7 @@ package com.anasdidi.superapp;
 
 import com.anasdidi.superapp.common.BaseVerticle;
 import com.anasdidi.superapp.verticle.helloworld.HelloWorldVerticle;
+import com.anasdidi.superapp.verticle.tracelog.TraceLogVerticle;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -43,7 +44,7 @@ public class MainVerticle extends AbstractVerticle {
                     processVerticle(
                         routerBuilder.result(),
                         config.result(),
-                        Arrays.asList(new HelloWorldVerticle())));
+                        Arrays.asList(new HelloWorldVerticle(), new TraceLogVerticle())));
 
     Future.all(config, routerBuilder, verticle)
         .onComplete(
@@ -90,7 +91,7 @@ public class MainVerticle extends AbstractVerticle {
                   .handler(
                       ctx -> {
                         UUID traceId = UUID.randomUUID();
-                        ctx.put("traceId", traceId);
+                        ctx.put("traceId", traceId.toString());
                         ctx.next();
                       });
               mainRouter.route("/*").subRouter(router);
