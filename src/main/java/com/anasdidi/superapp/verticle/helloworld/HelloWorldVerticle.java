@@ -11,7 +11,7 @@ import java.util.List;
 public class HelloWorldVerticle extends BaseVerticle {
 
   @Override
-  protected List<BaseService<?, ?>> prepareServiceMap() {
+  protected List<BaseService<?, ?>> prepareService() {
     return Arrays.asList(new GreetingService());
   }
 

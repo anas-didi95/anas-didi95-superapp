@@ -13,6 +13,8 @@ app:
         greeting:
           enabled: true
           eventType: GREET
+          opts:
+            journalUrl: test123
     TraceLogVerticle:
       enabled: true
       db:

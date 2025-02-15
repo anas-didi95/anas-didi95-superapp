@@ -34,7 +34,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
   private Map<String, Object> handlerMap;
   private BaseRepository repository;
 
-  protected abstract List<BaseService<?, ?>> prepareServiceMap();
+  protected abstract List<BaseService<?, ?>> prepareService();
 
   protected abstract List<String> getLiquibaseLabel();
 
@@ -44,7 +44,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
   public final void start(Promise<Void> startPromise) throws Exception {
     long timeStart = System.currentTimeMillis();
     this.serviceMap =
-        prepareServiceMap().stream()
+        prepareService().stream()
             .collect(Collectors.toMap(o -> o.getOperationId(), Function.identity()));
     this.handlerMap = config().getJsonObject("handler").getMap();
 
@@ -108,7 +108,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
               continue;
             }
 
-            route.get().addHandler(ctx -> service.get().process(ctx));
+            route.get().addHandler(ctx -> service.get().process(ctx, value.getJsonObject("opts")));
             logger.info(
                 "[{}:processRouter] Register route {}...{}",
                 this.getClass().getSimpleName(),
@@ -160,7 +160,10 @@ public abstract class BaseVerticle extends AbstractVerticle {
             }
 
             String address = CommonUtils.prepareEventBusAddress(this.getClass(), eventType.get());
-            vertx.eventBus().consumer(address).handler(msg -> service.get().process(msg));
+            vertx
+                .eventBus()
+                .consumer(address)
+                .handler(msg -> service.get().process(msg, value.getJsonObject("opts")));
             logger.info(
                 "[{}:processEventBus] Register event bus {}...{}",
                 this.getClass().getSimpleName(),

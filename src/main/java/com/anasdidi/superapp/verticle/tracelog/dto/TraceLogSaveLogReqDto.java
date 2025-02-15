@@ -3,5 +3,6 @@ package com.anasdidi.superapp.verticle.tracelog.dto;
 
 import io.vertx.core.json.JsonObject;
 
-public record TraceLogSaveLogReqDto(String traceId, String origin, JsonObject in, JsonObject out)
+public record TraceLogSaveLogReqDto(
+    String traceId, String origin, JsonObject in, JsonObject out, JsonObject opts)
     implements TraceLogBaseReqDto {}

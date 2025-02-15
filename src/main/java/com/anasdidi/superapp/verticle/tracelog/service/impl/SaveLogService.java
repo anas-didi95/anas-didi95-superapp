@@ -21,7 +21,7 @@ public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, Trace
   }
 
   @Override
-  protected TraceLogSaveLogResDto handle(InboundDto<TraceLogSaveLogReqDto> dto) {
+  protected TraceLogSaveLogResDto handle(InboundDto<TraceLogSaveLogReqDto> dto, JsonObject opts) {
     return new TraceLogSaveLogResDto();
   }
 
@@ -31,7 +31,8 @@ public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, Trace
     String origin = headers.get("EV_ORIGIN");
     JsonObject in = body.getJsonObject("in");
     JsonObject out = body.getJsonObject("out");
-    return new TraceLogSaveLogReqDto(traceId, origin, in, out);
+    JsonObject opts = body.getJsonObject("opts");
+    return new TraceLogSaveLogReqDto(traceId, origin, in, out, opts);
   }
 
   @Override

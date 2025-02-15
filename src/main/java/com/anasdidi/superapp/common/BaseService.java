@@ -28,7 +28,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
   public abstract String getOperationId();
 
-  protected abstract B handle(InboundDto<A> dto);
+  protected abstract B handle(InboundDto<A> dto, JsonObject opts);
 
   protected abstract A parseMessage(JsonObject body, MultiMap headers);
 
@@ -36,7 +36,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
   protected abstract JsonObject preparePath(Map<String, RequestParameter> path);
 
-  public void process(RoutingContext ctx) {
+  public void process(RoutingContext ctx, JsonObject opts) {
     String traceId = ctx.get("traceId");
     long timeStart = System.currentTimeMillis();
     logger.info("{} START...", getTag(traceId));
@@ -49,7 +49,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     InboundDto<A> in = new InboundDto<>(body, path, query);
     logger.info("{} IN :: {}", getTag(traceId), in);
 
-    B result = handle(in);
+    B result = handle(in, opts);
     logger.info("{} RESULT :: {}", getTag(traceId), result);
     ctx.response().end(JsonObject.mapFrom(result).encode());
 
@@ -58,7 +58,8 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
     eventBus.publish(
         CommonUtils.prepareEventBusAddress(TraceLogVerticle.class, "SAVE_LOG"),
-        JsonObject.of("in", JsonObject.mapFrom(in), "out", JsonObject.mapFrom(out)),
+        JsonObject.of("in", JsonObject.mapFrom(in), "out", JsonObject.mapFrom(out))
+            .put("opts", opts),
         new DeliveryOptions()
             .addHeader(
                 "EV_ORIGIN", "%s:%s".formatted(this.getClass().getSimpleName(), getOperationId()))
@@ -66,7 +67,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     logger.info("{} END...{}ms", getTag(traceId), System.currentTimeMillis() - timeStart);
   }
 
-  public void process(Message<Object> msg) {
+  public void process(Message<Object> msg, JsonObject opts) {
     String traceId = msg.headers().get("EV_TRACEID");
     String origin = msg.headers().get("EV_ORIGIN");
     long timeStart = System.currentTimeMillis();
@@ -76,7 +77,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     InboundDto<A> in = new InboundDto<>(message, null, null);
     logger.info("{} IN :: {}", getTag(traceId), in);
 
-    B result = handle(in);
+    B result = handle(in, opts);
     logger.info("{} RESULT :: {}", getTag(traceId), result);
 
     logger.info("{} END...{}ms", getTag(traceId), System.currentTimeMillis() - timeStart);
