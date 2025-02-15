@@ -54,3 +54,32 @@ databaseChangeLog:
                   type: BOOLEAN
                   constraints:
                     nullable: false
+              - column:
+                  name: REF1
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: REF2
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: REF3
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+
+  - changeSet:
+      id: db.changelog-2502112044.tbl_trace_log-2
+      author: anas
+      labels: tracelog
+      changes:
+        - createIndex:
+            tableName: TBL_TRACE_LOG
+            column:
+              name: TRACE_ID
+        - createIndex:
+            tableName: TBL_TRACE_LOG
+            column:
+              name: IS_ERR
