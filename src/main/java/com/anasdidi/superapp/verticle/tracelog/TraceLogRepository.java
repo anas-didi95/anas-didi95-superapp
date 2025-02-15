@@ -19,23 +19,20 @@ public class TraceLogRepository extends BaseRepository {
         INSERT INTO TBL_TRACE_LOG (CREATE_BY, CREATE_DT, TRACE_ID, ORIGIN, IN_PAYLOAD, OPTS, OUT_PAYLOAD, IS_ERR)
         VALUES (#{createBy}, #{createDate}, #{traceId}, #{origin}, #{in}, #{opts}, #{out}, #{isError})
         """;
-    TupleMapper<TraceLogSaveLogReqDto> mapper =
-        TupleMapper.mapper(
-            o ->
-                JsonObject.of()
-                    .put("createBy", "SYSTEM")
-                    .put("createDate", OffsetDateTime.now())
-                    .put("traceId", o.traceId())
-                    .put("origin", o.origin())
-                    .put("in", o.in().encode())
-                    .put("opts", Optional.ofNullable(o.opts()).orElse(JsonObject.of()).encode())
-                    .put("out", o.out().encode())
-                    .put("isError", Optional.ofNullable(o.isError()).orElse(true))
-                    .getMap());
+    JsonObject params =
+        JsonObject.of()
+            .put("createBy", "SYSTEM")
+            .put("createDate", OffsetDateTime.now())
+            .put("traceId", dto.traceId())
+            .put("origin", dto.origin())
+            .put("in", dto.in().encode())
+            .put("opts", Optional.ofNullable(dto.opts()).orElse(JsonObject.of()).encode())
+            .put("out", dto.out().encode())
+            .put("isError", Optional.ofNullable(dto.isError()).orElse(true));
 
     return SqlTemplate.forUpdate(conn, sql)
-        .mapFrom(mapper)
-        .execute(dto)
+        .mapFrom(TupleMapper.jsonObject())
+        .execute(params)
         .compose(o -> Future.succeededFuture());
   }
 }
