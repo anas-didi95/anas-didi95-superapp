@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import liquibase.Scope;
 import liquibase.command.CommandScope;
 import liquibase.command.CommonArgumentNames;
@@ -32,7 +34,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
   private Map<String, Object> handlerMap;
   private BaseRepository repository;
 
-  protected abstract Map<String, BaseService<?, ?>> getServiceMap();
+  protected abstract List<BaseService<?, ?>> prepareServiceMap();
 
   protected abstract List<String> getLiquibaseLabel();
 
@@ -41,7 +43,9 @@ public abstract class BaseVerticle extends AbstractVerticle {
   @Override
   public final void start(Promise<Void> startPromise) throws Exception {
     long timeStart = System.currentTimeMillis();
-    this.serviceMap = getServiceMap();
+    this.serviceMap =
+        prepareServiceMap().stream()
+            .collect(Collectors.toMap(o -> o.getOperationId(), Function.identity()));
     this.handlerMap = config().getJsonObject("handler").getMap();
 
     Future<?> database = processDatabase();

@@ -79,7 +79,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     B result = handle(in);
     logger.info("{} RESULT :: {}", getTag(traceId), result);
 
-    logger.info("{} END...{}ms", getTag(traceId), origin, System.currentTimeMillis() - timeStart);
+    logger.info("{} END...{}ms", getTag(traceId), System.currentTimeMillis() - timeStart);
   }
 
   private String getTag(String traceId) {
