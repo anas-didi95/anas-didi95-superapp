@@ -42,7 +42,7 @@ public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, Trace
               .onComplete(
                   o -> {
                     tran.result().commit().eventually(() -> conn.result().close());
-                    promise.complete(new OutboundDto<>(new TraceLogSaveLogResDto()));
+                    promise.complete(new OutboundDto<>(new TraceLogSaveLogResDto(), false));
                   },
                   e -> {
                     tran.result().rollback().eventually(() -> conn.result().close());
@@ -58,7 +58,8 @@ public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, Trace
     JsonObject in = body.getJsonObject("in");
     JsonObject out = body.getJsonObject("out");
     JsonObject opts = body.getJsonObject("opts");
-    return new TraceLogSaveLogReqDto(traceId, origin, in, out, opts);
+    Boolean isError = body.getBoolean("isError");
+    return new TraceLogSaveLogReqDto(traceId, origin, in, out, opts, isError);
   }
 
   @Override

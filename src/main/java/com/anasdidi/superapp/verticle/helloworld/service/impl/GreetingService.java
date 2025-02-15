@@ -27,7 +27,8 @@ public class GreetingService
           case "mly" -> "Selamat datang.";
           default -> "Welcome.";
         };
-    return Future.succeededFuture(new OutboundDto<>(new HelloWorldGreetingResDto(lang, value)));
+    return Future.succeededFuture(
+        new OutboundDto<>(new HelloWorldGreetingResDto(lang, value), false));
   }
 
   @Override

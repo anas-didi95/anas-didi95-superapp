@@ -65,9 +65,11 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
             () -> {
               eventBus.publish(
                   CommonUtils.prepareEventBusAddress(TraceLogVerticle.class, "SAVE_LOG"),
-                  JsonObject.of(
-                          "in", JsonObject.mapFrom(in), "out", JsonObject.mapFrom(out.result()))
-                      .put("opts", opts),
+                  JsonObject.of()
+                      .put("in", JsonObject.mapFrom(in))
+                      .put("out", JsonObject.mapFrom(out.result()))
+                      .put("opts", opts)
+                      .put("isError", out.result().isError()),
                   new DeliveryOptions()
                       .addHeader(
                           "EV_ORIGIN",
@@ -122,5 +124,5 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
   public static record InboundDto<A>(A body, JsonObject path, JsonObject query) {}
 
-  public static record OutboundDto<B>(B result) {}
+  public static record OutboundDto<B>(B result, Boolean isError) {}
 }
