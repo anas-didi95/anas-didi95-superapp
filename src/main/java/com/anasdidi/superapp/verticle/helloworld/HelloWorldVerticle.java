@@ -1,6 +1,7 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
 package com.anasdidi.superapp.verticle.helloworld;
 
+import com.anasdidi.superapp.common.BaseRepository;
 import com.anasdidi.superapp.common.BaseService;
 import com.anasdidi.superapp.common.BaseVerticle;
 import com.anasdidi.superapp.verticle.helloworld.service.impl.GreetingService;
@@ -14,12 +15,17 @@ public class HelloWorldVerticle extends BaseVerticle {
 
   @Override
   protected Map<String, BaseService<?, ?>> getServiceMap() {
-    return Arrays.asList(new GreetingService(vertx.eventBus())).stream()
+    return Arrays.asList(new GreetingService()).stream()
         .collect(Collectors.toMap(o -> o.getOperationId(), Function.identity()));
   }
 
   @Override
   protected List<String> getLiquibaseLabel() {
     return Arrays.asList("helloworld");
+  }
+
+  @Override
+  protected BaseRepository getRepository() {
+    throw new UnsupportedOperationException("Unimplemented method 'getRepository'");
   }
 }

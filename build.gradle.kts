@@ -37,6 +37,7 @@ dependencies {
   implementation("io.vertx:vertx-web-openapi-router")
   implementation("io.vertx:vertx-config")
   implementation("io.vertx:vertx-config-yaml")
+  implementation("io.vertx:vertx-jdbc-client")
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
 

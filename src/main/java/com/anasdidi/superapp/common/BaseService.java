@@ -19,11 +19,11 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
   private static final Logger logger = LogManager.getLogger(BaseService.class);
   private final Class<A> bodyClass;
-  private final EventBus eventBus;
+  protected EventBus eventBus;
+  protected BaseRepository repository;
 
-  public BaseService(Class<A> bodyClass, EventBus eventBus) {
+  public BaseService(Class<A> bodyClass) {
     this.bodyClass = bodyClass;
-    this.eventBus = eventBus;
   }
 
   public abstract String getOperationId();
@@ -31,6 +31,10 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
   protected abstract B handle(InboundDto<A> dto);
 
   protected abstract A parseMessage(JsonObject body, MultiMap headers);
+
+  protected abstract JsonObject prepareQuery(Map<String, RequestParameter> query);
+
+  protected abstract JsonObject preparePath(Map<String, RequestParameter> path);
 
   public void process(RoutingContext ctx) {
     String traceId = ctx.get("traceId");
@@ -78,19 +82,19 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     logger.info("{} END...{}ms", getTag(traceId), origin, System.currentTimeMillis() - timeStart);
   }
 
-  protected JsonObject prepareQuery(Map<String, RequestParameter> query) {
-    return JsonObject.of();
+  private String getTag(String traceId) {
+    return "[%s:%s:%s]".formatted(traceId, this.getClass().getSimpleName(), getOperationId());
   }
 
-  protected JsonObject preparePath(Map<String, RequestParameter> path) {
-    return JsonObject.of();
+  public final void setEventBus(EventBus eventBus) {
+    this.eventBus = eventBus;
+  }
+
+  public final void setRepository(BaseRepository repository) {
+    this.repository = repository;
   }
 
   public static record InboundDto<A>(A body, JsonObject path, JsonObject query) {}
 
   public static record OutboundDto<B>(B result) {}
-
-  private String getTag(String traceId) {
-    return "[%s:%s:%s]".formatted(traceId, this.getClass().getSimpleName(), getOperationId());
-  }
 }

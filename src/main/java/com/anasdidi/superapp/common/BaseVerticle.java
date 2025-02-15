@@ -7,6 +7,9 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.openapi.router.OpenAPIRoute;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
+import io.vertx.jdbcclient.JDBCConnectOptions;
+import io.vertx.jdbcclient.JDBCPool;
+import io.vertx.sqlclient.PoolOptions;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,10 +30,13 @@ public abstract class BaseVerticle extends AbstractVerticle {
   private RouterBuilder routerBuilder;
   private Map<String, BaseService<?, ?>> serviceMap;
   private Map<String, Object> handlerMap;
+  private BaseRepository repository;
 
   protected abstract Map<String, BaseService<?, ?>> getServiceMap();
 
   protected abstract List<String> getLiquibaseLabel();
+
+  protected abstract BaseRepository getRepository();
 
   @Override
   public final void start(Promise<Void> startPromise) throws Exception {
@@ -38,9 +44,20 @@ public abstract class BaseVerticle extends AbstractVerticle {
     this.serviceMap = getServiceMap();
     this.handlerMap = config().getJsonObject("handler").getMap();
 
-    Future.all(processDatabase(), processRouter(), processEventBus())
+    Future<?> database = processDatabase();
+    Future<?> repository = database.andThen(o -> processRepository());
+    Future<?> router = repository.andThen(o -> processRouter());
+    Future<?> eventBus = repository.andThen(o -> processEventBus());
+
+    Future.all(database, repository, router, eventBus)
         .onComplete(
             o -> {
+              this.serviceMap.forEach(
+                  (k, v) -> {
+                    v.setEventBus(vertx.eventBus());
+                    v.setRepository(this.repository);
+                  });
+
               logger.info(
                   "[{}:start] Verticle ready...{}ms",
                   this.getClass().getSimpleName(),
@@ -218,6 +235,38 @@ public abstract class BaseVerticle extends AbstractVerticle {
               this.getClass().getSimpleName(),
               System.currentTimeMillis() - timeStart);
           return null;
+        });
+  }
+
+  private Future<Void> processRepository() {
+    return Future.future(
+        promise -> {
+          long timeStart = System.currentTimeMillis();
+          JsonObject db = config().getJsonObject("db");
+
+          if (Objects.isNull(db)) {
+            logger.warn(
+                "[{}:processRepository] Db config missing...skip", this.getClass().getSimpleName());
+            promise.complete();
+          }
+
+          this.repository = getRepository();
+          this.repository.setDatasource(
+              JDBCPool.pool(
+                  vertx,
+                  new JDBCConnectOptions()
+                      .setJdbcUrl(db.getString("url"))
+                      .setUser(db.getString("user"))
+                      .setPassword(db.getString("password")),
+                  new PoolOptions()
+                      .setName("%s-DS".formatted(this.getClass().getSimpleName()))
+                      .setMaxSize(16)));
+
+          logger.info(
+              "[{}:processRepository] Repository ready...{}ms",
+              this.getClass().getSimpleName(),
+              System.currentTimeMillis() - timeStart);
+          promise.complete();
         });
   }
 }

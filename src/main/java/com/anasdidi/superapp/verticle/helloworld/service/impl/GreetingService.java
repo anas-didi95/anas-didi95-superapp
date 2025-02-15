@@ -5,7 +5,6 @@ import com.anasdidi.superapp.verticle.helloworld.dto.HelloWorldGreetingReqDto;
 import com.anasdidi.superapp.verticle.helloworld.dto.HelloWorldGreetingResDto;
 import com.anasdidi.superapp.verticle.helloworld.service.HelloWorldService;
 import io.vertx.core.MultiMap;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.validation.RequestParameter;
 import java.util.Map;
@@ -13,12 +12,8 @@ import java.util.Map;
 public class GreetingService
     extends HelloWorldService<HelloWorldGreetingReqDto, HelloWorldGreetingResDto> {
 
-  public GreetingService(EventBus eventBus) {
-    this(HelloWorldGreetingReqDto.class, eventBus);
-  }
-
-  public GreetingService(Class<HelloWorldGreetingReqDto> bodyClass, EventBus eventBus) {
-    super(bodyClass, eventBus);
+  public GreetingService() {
+    super(HelloWorldGreetingReqDto.class);
   }
 
   @Override
@@ -46,5 +41,10 @@ public class GreetingService
   @Override
   protected HelloWorldGreetingReqDto parseMessage(JsonObject body, MultiMap headers) {
     throw new UnsupportedOperationException("Unimplemented method 'parseMessage'");
+  }
+
+  @Override
+  protected JsonObject preparePath(Map<String, RequestParameter> path) {
+    return JsonObject.of();
   }
 }

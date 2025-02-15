@@ -5,17 +5,14 @@ import com.anasdidi.superapp.verticle.tracelog.dto.TraceLogSaveLogReqDto;
 import com.anasdidi.superapp.verticle.tracelog.dto.TraceLogSaveLogResDto;
 import com.anasdidi.superapp.verticle.tracelog.service.TraceLogService;
 import io.vertx.core.MultiMap;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
+import io.vertx.openapi.validation.RequestParameter;
+import java.util.Map;
 
 public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, TraceLogSaveLogResDto> {
 
-  public SaveLogService(EventBus eventBus) {
-    super(TraceLogSaveLogReqDto.class, eventBus);
-  }
-
-  public SaveLogService(Class<TraceLogSaveLogReqDto> bodyClass, EventBus eventBus) {
-    super(bodyClass, eventBus);
+  public SaveLogService() {
+    super(TraceLogSaveLogReqDto.class);
   }
 
   @Override
@@ -35,5 +32,15 @@ public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, Trace
     JsonObject in = body.getJsonObject("in");
     JsonObject out = body.getJsonObject("out");
     return new TraceLogSaveLogReqDto(traceId, origin, in, out);
+  }
+
+  @Override
+  protected JsonObject prepareQuery(Map<String, RequestParameter> query) {
+    return JsonObject.of();
+  }
+
+  @Override
+  protected JsonObject preparePath(Map<String, RequestParameter> path) {
+    return JsonObject.of();
   }
 }
