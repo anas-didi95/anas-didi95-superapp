@@ -263,7 +263,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
                   vertx,
                   new JDBCConnectOptions()
                       .setJdbcUrl(db.getString("url"))
-                      .setUser(db.getString("user"))
+                      .setUser(db.getString("username"))
                       .setPassword(db.getString("password")),
                   new PoolOptions()
                       .setName("%s-DS".formatted(this.getClass().getSimpleName()))

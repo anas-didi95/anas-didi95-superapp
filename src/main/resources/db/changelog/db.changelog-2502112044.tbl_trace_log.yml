@@ -35,7 +35,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: IN
+                  name: IN_PAYLOAD
                   type: CLOB
                   constraints:
                     nullable: false
@@ -43,14 +43,14 @@ databaseChangeLog:
                   name: OPTS
                   type: CLOB
                   constraints:
-                    nullable: true
+                    nullable: false
               - column:
-                  name: OUT
+                  name: OUT_PAYLOAD
                   type: CLOB
                   constraints:
-                    nullable: true
+                    nullable: false
               - column:
-                  name: ERR
-                  type: CLOB
+                  name: IS_ERR
+                  type: BOOLEAN
                   constraints:
-                    nullable: TRUE
+                    nullable: false
