@@ -1,6 +1,7 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
 package com.anasdidi.superapp.verticle.tracelog.service.impl;
 
+import com.anasdidi.superapp.verticle.tracelog.TraceLogRepository;
 import com.anasdidi.superapp.verticle.tracelog.dto.TraceLogSaveLogReqDto;
 import com.anasdidi.superapp.verticle.tracelog.dto.TraceLogSaveLogResDto;
 import com.anasdidi.superapp.verticle.tracelog.service.TraceLogService;
@@ -10,10 +11,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.Tuple;
-import java.time.OffsetDateTime;
 import java.util.Map;
-import java.util.Optional;
 
 public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, TraceLogSaveLogResDto> {
 
@@ -28,38 +26,19 @@ public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, Trace
 
   @Override
   protected TraceLogSaveLogResDto handle(InboundDto<TraceLogSaveLogReqDto> dto, JsonObject opts) {
-    Future<SqlConnection> conn = this.repository.getConnection();
+    Future<SqlConnection> conn = this.getRepository(TraceLogRepository.class).getConnection();
     Future<Transaction> tran = conn.compose(o -> o.begin());
-
-    String sql =
-        "INSERT INTO TBL_TRACE_LOG (CREATE_BY, CREATE_DT, TRACE_ID, ORIGIN, IN_PAYLOAD, OPTS, OUT_PAYLOAD, IS_ERR) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    Future<?> insert =
-        conn.compose(
-            o ->
-                o.preparedQuery(sql)
-                    .execute(
-                        Tuple.of(
-                            "SYSTEM",
-                            OffsetDateTime.now(),
-                            dto.body().traceId(),
-                            dto.body().origin(),
-                            dto.body().in().encode(),
-                            Optional.ofNullable(dto.body().opts()).orElse(JsonObject.of()).encode(),
-                            dto.body().out().encode(),
-                            false)));
+    Future<Void> insert =
+        Future.all(conn, tran)
+            .compose(
+                o ->
+                    this.getRepository(TraceLogRepository.class)
+                        .saveLog(conn.result(), dto.body()));
 
     Future.all(conn, tran, insert)
         .onComplete(
-            o -> {
-              tran.result().commit();
-              conn.result().close();
-            },
-            e -> {
-              System.out.println(e);
-              e.printStackTrace();
-              tran.result().rollback();
-              conn.result().close();
-            });
+            o -> tran.result().commit().eventually(() -> conn.result().close()),
+            e -> tran.result().rollback().eventually(() -> conn.result().close()));
     return new TraceLogSaveLogResDto();
   }
 

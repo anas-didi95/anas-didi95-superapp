@@ -20,7 +20,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
   private static final Logger logger = LogManager.getLogger(BaseService.class);
   private final Class<A> bodyClass;
   protected EventBus eventBus;
-  protected BaseRepository repository;
+  private BaseRepository repository;
 
   public BaseService(Class<A> bodyClass) {
     this.bodyClass = bodyClass;
@@ -93,6 +93,10 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
   public final void setRepository(BaseRepository repository) {
     this.repository = repository;
+  }
+
+  public final <C extends BaseRepository> C getRepository(Class<C> clazz) {
+    return clazz.cast(this.repository);
   }
 
   public static record InboundDto<A>(A body, JsonObject path, JsonObject query) {}
