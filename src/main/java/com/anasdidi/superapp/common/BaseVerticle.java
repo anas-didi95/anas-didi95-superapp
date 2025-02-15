@@ -198,6 +198,12 @@ public abstract class BaseVerticle extends AbstractVerticle {
             return null;
           }
 
+          if (!db.getBoolean("migrate", false)) {
+            logger.warn(
+                "[{}:processDatabase] Migrate not enabled...skip", this.getClass().getSimpleName());
+            return null;
+          }
+
           logger.info(
               "[{}:processDatabase] Liquibase env...{}", this.getClass().getSimpleName(), env);
           Scope.child(

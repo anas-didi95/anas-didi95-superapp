@@ -6,6 +6,7 @@ app:
     HelloWorldVerticle:
       enabled: true
       db:
+        migrate: false
         url: jdbc:h2:./.h2/helloworld
         username: sa
         password: sa
@@ -18,6 +19,7 @@ app:
     TraceLogVerticle:
       enabled: true
       db:
+        migrate: true
         url: jdbc:h2:./.h2/tracelog
         username: sa
         password: sa
