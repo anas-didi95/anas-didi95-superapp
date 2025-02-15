@@ -25,21 +25,30 @@ public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, Trace
   }
 
   @Override
-  protected TraceLogSaveLogResDto handle(InboundDto<TraceLogSaveLogReqDto> dto, JsonObject opts) {
-    Future<SqlConnection> conn = this.getRepository(TraceLogRepository.class).getConnection();
-    Future<Transaction> tran = conn.compose(o -> o.begin());
-    Future<Void> insert =
-        Future.all(conn, tran)
-            .compose(
-                o ->
-                    this.getRepository(TraceLogRepository.class)
-                        .saveLog(conn.result(), dto.body()));
+  protected Future<OutboundDto<TraceLogSaveLogResDto>> handle(
+      InboundDto<TraceLogSaveLogReqDto> dto, JsonObject opts) {
+    return Future.future(
+        promise -> {
+          Future<SqlConnection> conn = this.getRepository(TraceLogRepository.class).getConnection();
+          Future<Transaction> tran = conn.compose(o -> o.begin());
+          Future<Void> insert =
+              Future.all(conn, tran)
+                  .compose(
+                      o ->
+                          this.getRepository(TraceLogRepository.class)
+                              .saveLog(conn.result(), dto.body()));
 
-    Future.all(conn, tran, insert)
-        .onComplete(
-            o -> tran.result().commit().eventually(() -> conn.result().close()),
-            e -> tran.result().rollback().eventually(() -> conn.result().close()));
-    return new TraceLogSaveLogResDto();
+          Future.all(conn, tran, insert)
+              .onComplete(
+                  o -> {
+                    tran.result().commit().eventually(() -> conn.result().close());
+                    promise.complete(new OutboundDto<>(new TraceLogSaveLogResDto()));
+                  },
+                  e -> {
+                    tran.result().rollback().eventually(() -> conn.result().close());
+                    promise.fail(e);
+                  });
+        });
   }
 
   @Override

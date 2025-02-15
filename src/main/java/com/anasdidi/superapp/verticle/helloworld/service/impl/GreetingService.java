@@ -4,6 +4,7 @@ package com.anasdidi.superapp.verticle.helloworld.service.impl;
 import com.anasdidi.superapp.verticle.helloworld.dto.HelloWorldGreetingReqDto;
 import com.anasdidi.superapp.verticle.helloworld.dto.HelloWorldGreetingResDto;
 import com.anasdidi.superapp.verticle.helloworld.service.HelloWorldService;
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.validation.RequestParameter;
@@ -17,7 +18,7 @@ public class GreetingService
   }
 
   @Override
-  protected HelloWorldGreetingResDto handle(
+  protected Future<OutboundDto<HelloWorldGreetingResDto>> handle(
       InboundDto<HelloWorldGreetingReqDto> dto, JsonObject opts) {
     String lang = dto.query().getString("lang", "eng");
     String value =
@@ -26,7 +27,7 @@ public class GreetingService
           case "mly" -> "Selamat datang.";
           default -> "Welcome.";
         };
-    return new HelloWorldGreetingResDto(lang, value);
+    return Future.succeededFuture(new OutboundDto<>(new HelloWorldGreetingResDto(lang, value)));
   }
 
   @Override

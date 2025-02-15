@@ -2,6 +2,7 @@
 package com.anasdidi.superapp.common;
 
 import com.anasdidi.superapp.verticle.tracelog.TraceLogVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
@@ -28,7 +29,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
   public abstract String getOperationId();
 
-  protected abstract B handle(InboundDto<A> dto, JsonObject opts);
+  protected abstract Future<OutboundDto<B>> handle(InboundDto<A> dto, JsonObject opts);
 
   protected abstract A parseMessage(JsonObject body, MultiMap headers);
 
@@ -49,22 +50,32 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     InboundDto<A> in = new InboundDto<>(body, path, query);
     logger.info("{} IN :: {}", getTag(traceId), in);
 
-    B result = handle(in, opts);
-    logger.info("{} RESULT :: {}", getTag(traceId), result);
-    ctx.response().end(JsonObject.mapFrom(result).encode());
+    Future<OutboundDto<B>> out = handle(in, opts);
 
-    OutboundDto<B> out = new OutboundDto<>(result);
-    logger.info("{} OUT :: {}", getTag(traceId), out);
-
-    eventBus.publish(
-        CommonUtils.prepareEventBusAddress(TraceLogVerticle.class, "SAVE_LOG"),
-        JsonObject.of("in", JsonObject.mapFrom(in), "out", JsonObject.mapFrom(out))
-            .put("opts", opts),
-        new DeliveryOptions()
-            .addHeader(
-                "EV_ORIGIN", "%s:%s".formatted(this.getClass().getSimpleName(), getOperationId()))
-            .addHeader("EV_TRACEID", traceId));
-    logger.info("{} END...{}ms", getTag(traceId), System.currentTimeMillis() - timeStart);
+    out.onComplete(
+            o -> {
+              logger.info("{} OUT :: {}", getTag(traceId), o);
+              ctx.response().end(JsonObject.mapFrom(o.result()).encode());
+            },
+            e -> {
+              logger.error("{} ERR :: {}", getTag(traceId), e.getMessage());
+              ctx.fail(500, e);
+            })
+        .eventually(
+            () -> {
+              eventBus.publish(
+                  CommonUtils.prepareEventBusAddress(TraceLogVerticle.class, "SAVE_LOG"),
+                  JsonObject.of(
+                          "in", JsonObject.mapFrom(in), "out", JsonObject.mapFrom(out.result()))
+                      .put("opts", opts),
+                  new DeliveryOptions()
+                      .addHeader(
+                          "EV_ORIGIN",
+                          "%s:%s".formatted(this.getClass().getSimpleName(), getOperationId()))
+                      .addHeader("EV_TRACEID", traceId));
+              logger.info("{} END...{}ms", getTag(traceId), System.currentTimeMillis() - timeStart);
+              return Future.succeededFuture();
+            });
   }
 
   public void process(Message<Object> msg, JsonObject opts) {
@@ -77,10 +88,20 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     InboundDto<A> in = new InboundDto<>(message, null, null);
     logger.info("{} IN :: {}", getTag(traceId), in);
 
-    B result = handle(in, opts);
-    logger.info("{} RESULT :: {}", getTag(traceId), result);
+    Future<OutboundDto<B>> out = handle(in, opts);
 
-    logger.info("{} END...{}ms", getTag(traceId), System.currentTimeMillis() - timeStart);
+    out.onComplete(
+            o -> {
+              logger.info("{} OUT :: {}", getTag(traceId), o.result());
+            },
+            e -> {
+              logger.error("{} ERR :: {}", getTag(traceId), e.getMessage());
+            })
+        .eventually(
+            () -> {
+              logger.info("{} END...{}ms", getTag(traceId), System.currentTimeMillis() - timeStart);
+              return Future.succeededFuture();
+            });
   }
 
   private String getTag(String traceId) {
