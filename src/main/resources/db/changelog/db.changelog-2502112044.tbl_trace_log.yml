@@ -76,10 +76,12 @@ databaseChangeLog:
       labels: tracelog
       changes:
         - createIndex:
+            indexName: IDX_TRACE_LOG#TRACE_ID
             tableName: TBL_TRACE_LOG
             column:
               name: TRACE_ID
         - createIndex:
+            indexName: IDX_TRACE_LOG#IS_ERR
             tableName: TBL_TRACE_LOG
             column:
               name: IS_ERR
