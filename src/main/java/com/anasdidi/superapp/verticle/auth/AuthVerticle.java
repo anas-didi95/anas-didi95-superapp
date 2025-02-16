@@ -5,7 +5,6 @@ import com.anasdidi.superapp.common.BaseRepository;
 import com.anasdidi.superapp.common.BaseService;
 import com.anasdidi.superapp.common.BaseVerticle;
 import com.anasdidi.superapp.verticle.auth.service.impl.LoginService;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,7 +22,6 @@ public class AuthVerticle extends BaseVerticle {
 
   @Override
   protected BaseRepository getRepository() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getRepository'");
+    return new AuthRepository();
   }
 }

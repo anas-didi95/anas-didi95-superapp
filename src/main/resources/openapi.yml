@@ -48,6 +48,7 @@ paths:
       description: Login
       operationId: login
       requestBody:
+        required: false
         content:
           application/json:
             schema:

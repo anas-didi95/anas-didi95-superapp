@@ -16,9 +16,11 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.openapi.router.RequestExtractor;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.openapi.contract.OpenAPIContract;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -88,6 +90,7 @@ public class MainVerticle extends AbstractVerticle {
                         .end(errorObject.encode());
                   });
               Router mainRouter = Router.router(vertx);
+              mainRouter.route().handler(BodyHandler.create());
               mainRouter
                   .route()
                   .handler(

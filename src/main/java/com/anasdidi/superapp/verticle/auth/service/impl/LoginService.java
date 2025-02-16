@@ -1,17 +1,16 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
 package com.anasdidi.superapp.verticle.auth.service.impl;
 
-import com.anasdidi.superapp.verticle.auth.dto.AuthBaseResDto;
 import com.anasdidi.superapp.verticle.auth.dto.AuthLoginReqDto;
+import com.anasdidi.superapp.verticle.auth.dto.AuthLoginResDto;
 import com.anasdidi.superapp.verticle.auth.service.AuthService;
-
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.validation.RequestParameter;
 import java.util.Map;
 
-public class LoginService extends AuthService<AuthLoginReqDto, AuthBaseResDto> {
+public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> {
 
   public LoginService() {
     super(AuthLoginReqDto.class);
@@ -23,27 +22,23 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthBaseResDto> {
   }
 
   @Override
-  protected Future<OutboundDto<AuthBaseResDto>> handle(
+  protected Future<OutboundDto<AuthLoginResDto>> handle(
       InboundDto<AuthLoginReqDto> dto, JsonObject opts) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'handle'");
+    return Future.succeededFuture(new OutboundDto<>(new AuthLoginResDto("1122334455"), false));
   }
 
   @Override
   protected AuthLoginReqDto parseMessage(JsonObject body, MultiMap headers) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'parseMessage'");
+    return new AuthLoginReqDto(null, null);
   }
 
   @Override
   protected JsonObject prepareQuery(Map<String, RequestParameter> query) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'prepareQuery'");
+    return JsonObject.of();
   }
 
   @Override
   protected JsonObject preparePath(Map<String, RequestParameter> path) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'preparePath'");
+    return JsonObject.of();
   }
 }
