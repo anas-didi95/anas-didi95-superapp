@@ -16,6 +16,7 @@ app:
           eventType: GREET
           opts:
             journalUrl: test123
+
     TraceLogVerticle:
       enabled: true
       db:
@@ -27,3 +28,14 @@ app:
         saveLog:
           enabled: true
           eventType: SAVE_LOG
+
+    AuthVerticle:
+      enabled: true
+      db:
+        migrate: true
+        url: jdbc:h2:./.h2/auth
+        username: sa
+        password: sa
+      handler:
+        login:
+          enabled: true

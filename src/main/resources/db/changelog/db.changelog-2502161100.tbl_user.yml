@@ -1,0 +1,65 @@
+databaseChangeLog:
+  - changeSet:
+      id: db.changelog-2502161100.tbl_user-1
+      author: anas
+      labels: auth
+      changes:
+        - createTable:
+            tableName: TBL_USER
+            columns:
+              - column:
+                  name: ID
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: CREATE_BY
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CREATE_DT
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: UPDATE_BY
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: UPDATE_DT
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: true
+              - column:
+                  name: IS_DEL
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: USERNAME
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: PASSWORD
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: SALT
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            indexName: IDX_USER#USERNAME_IS_DEL
+            unique: true
+            tableName: TBL_USER
+            columns:
+              - column:
+                  name: USERNAME
+              - column:
+                  name: IS_DEL

@@ -7,3 +7,5 @@ databaseChangeLog:
             tag: 0.1.0
   - include:
       file: /db/changelog/db.changelog-2502112044.tbl_trace_log.yml
+  - include:
+      file: /db/changelog/db.changelog-2502161100.tbl_user.yml

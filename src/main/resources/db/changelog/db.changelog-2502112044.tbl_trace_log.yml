@@ -70,11 +70,6 @@ databaseChangeLog:
                   constraints:
                     nullable: true
 
-  - changeSet:
-      id: db.changelog-2502112044.tbl_trace_log-2
-      author: anas
-      labels: tracelog
-      changes:
         - createIndex:
             indexName: IDX_TRACE_LOG#TRACE_ID
             tableName: TBL_TRACE_LOG

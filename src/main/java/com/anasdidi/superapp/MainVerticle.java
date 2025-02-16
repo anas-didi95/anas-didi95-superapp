@@ -2,6 +2,7 @@
 package com.anasdidi.superapp;
 
 import com.anasdidi.superapp.common.BaseVerticle;
+import com.anasdidi.superapp.verticle.auth.AuthVerticle;
 import com.anasdidi.superapp.verticle.helloworld.HelloWorldVerticle;
 import com.anasdidi.superapp.verticle.tracelog.TraceLogVerticle;
 import io.vertx.config.ConfigRetriever;
@@ -44,7 +45,8 @@ public class MainVerticle extends AbstractVerticle {
                     processVerticle(
                         routerBuilder.result(),
                         config.result(),
-                        Arrays.asList(new HelloWorldVerticle(), new TraceLogVerticle())));
+                        Arrays.asList(
+                            new HelloWorldVerticle(), new TraceLogVerticle(), new AuthVerticle())));
 
     Future.all(config, routerBuilder, verticle)
         .onComplete(
