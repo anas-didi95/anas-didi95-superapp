@@ -21,7 +21,7 @@ public class TraceLogVerticle extends BaseVerticle {
   }
 
   @Override
-  protected BaseRepository getRepository() {
+  protected BaseRepository prepareRepository() {
     return new TraceLogRepository();
   }
 }

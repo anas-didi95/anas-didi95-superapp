@@ -44,8 +44,10 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
     ValidatedRequest validatedRequest = ctx.get(RouterBuilder.KEY_META_DATA_VALIDATED_REQUEST);
     logger.trace("{} ctx.body={}", ctx.body().asJsonObject().encode());
-    logger.trace("{} validatedRequest.body={}", getTag(traceId), validatedRequest.getBody().getJsonObject());
-    logger.trace("{} validatedRequest.path={}", getTag(traceId), validatedRequest.getPathParameters());
+    logger.trace(
+        "{} validatedRequest.body={}", getTag(traceId), validatedRequest.getBody().getJsonObject());
+    logger.trace(
+        "{} validatedRequest.path={}", getTag(traceId), validatedRequest.getPathParameters());
     logger.trace("{} validatedRequest.query={}", getTag(traceId), validatedRequest.getQuery());
 
     A body = validatedRequest.getBody().getJsonObject().mapTo(bodyClass);

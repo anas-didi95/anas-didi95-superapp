@@ -21,7 +21,7 @@ public class HelloWorldVerticle extends BaseVerticle {
   }
 
   @Override
-  protected BaseRepository getRepository() {
+  protected BaseRepository prepareRepository() {
     throw new UnsupportedOperationException("Unimplemented method 'getRepository'");
   }
 }

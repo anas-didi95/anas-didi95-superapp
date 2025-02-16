@@ -21,7 +21,7 @@ public class AuthVerticle extends BaseVerticle {
   }
 
   @Override
-  protected BaseRepository getRepository() {
+  protected BaseRepository prepareRepository() {
     return new AuthRepository();
   }
 }

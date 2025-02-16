@@ -38,7 +38,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
 
   protected abstract List<String> getLiquibaseLabel();
 
-  protected abstract BaseRepository getRepository();
+  protected abstract BaseRepository prepareRepository();
 
   @Override
   public final void start(Promise<Void> startPromise) throws Exception {
@@ -263,7 +263,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
             promise.complete();
           }
 
-          this.repository = getRepository();
+          this.repository = prepareRepository();
           this.repository.setDatasource(
               JDBCPool.pool(
                   vertx,

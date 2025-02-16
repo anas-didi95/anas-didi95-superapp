@@ -20,7 +20,6 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.openapi.router.RequestExtractor;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.openapi.contract.OpenAPIContract;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
