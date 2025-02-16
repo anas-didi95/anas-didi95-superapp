@@ -11,7 +11,7 @@ app:
         username: sa
         password: sa
       handler:
-        greeting:
+        greet:
           enabled: true
           eventType: GREET
           opts:

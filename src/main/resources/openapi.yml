@@ -14,6 +14,8 @@ servers:
     description: dev
 
 tags:
+  - name: auth
+    description: Authentication
   - name: hello-world
     description: Hello World
 
@@ -22,9 +24,9 @@ paths:
     get:
       tags:
         - hello-world
-      description: Greeting
-      summary: Greeting
-      operationId: greeting
+      description: Greet
+      summary: Greet
+      operationId: greet
       parameters:
         - name: lang
           in: query
@@ -34,13 +36,55 @@ paths:
       responses:
         "200":
           description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HelloWorldGreetResDto"
+  /auth/v1/login:
+    post:
+      tags:
+        - auth
+      summary: Login
+      description: Login
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthLoginReqDto"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthLoginResDto"
 
 components:
   schemas:
-    HelloWorld:
+    # HelloWorldGreetReqDto:
+    #   type: object
+    HelloWorldGreetResDto:
       type: object
       properties:
         lang:
           type: string
+          nullable: false
         value:
           type: string
+          nullable: false
+    AuthLoginReqDto:
+      type: object
+      properties:
+        username:
+          type: string
+          nullable: false
+        password:
+          type: string
+          nullable: false
+    AuthLoginResDto:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          nullable: false
