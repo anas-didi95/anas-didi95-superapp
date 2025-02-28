@@ -15,6 +15,7 @@ app:
           enabled: true
           eventType: GREET
           opts:
+            trace: true
             journalUrl: test123
 
     TraceLogVerticle:

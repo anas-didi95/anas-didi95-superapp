@@ -4,8 +4,8 @@ package com.anasdidi.superapp.common;
 import com.anasdidi.superapp.verticle.tracelog.TraceLogVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -13,6 +13,7 @@ import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.openapi.validation.ValidatedRequest;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,7 +21,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
   private static final Logger logger = LogManager.getLogger(BaseService.class);
   private final Class<A> bodyClass;
-  protected EventBus eventBus;
+  protected Vertx vertx;
   private BaseRepository repository;
 
   public BaseService(Class<A> bodyClass) {
@@ -43,14 +44,16 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     logger.info("{} START...", getTag(traceId));
 
     ValidatedRequest validatedRequest = ctx.get(RouterBuilder.KEY_META_DATA_VALIDATED_REQUEST);
-    logger.trace("{} ctx.body={}", ctx.body().asJsonObject().encode());
-    logger.trace(
-        "{} validatedRequest.body={}", getTag(traceId), validatedRequest.getBody().getJsonObject());
+    logger.trace("{} validatedRequest.body={}", getTag(traceId), validatedRequest.getBody());
     logger.trace(
         "{} validatedRequest.path={}", getTag(traceId), validatedRequest.getPathParameters());
     logger.trace("{} validatedRequest.query={}", getTag(traceId), validatedRequest.getQuery());
 
-    A body = validatedRequest.getBody().getJsonObject().mapTo(bodyClass);
+    A body =
+        Optional.ofNullable(validatedRequest.getBody())
+            .map(o -> o.getJsonObject())
+            .map(o -> o.mapTo(bodyClass))
+            .orElse(null);
     JsonObject path = preparePath(validatedRequest.getPathParameters());
     JsonObject query = prepareQuery(validatedRequest.getQuery());
 
@@ -70,20 +73,25 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
             })
         .eventually(
             () -> {
-              eventBus.publish(
-                  CommonUtils.prepareEventBusAddress(TraceLogVerticle.class, "SAVE_LOG"),
-                  JsonObject.of()
-                      .put("in", JsonObject.mapFrom(in))
-                      .put("out", JsonObject.mapFrom(out.result()))
-                      .put("opts", opts)
-                      .put("isError", out.result().isError()),
-                  new DeliveryOptions()
-                      .addHeader(
-                          "EV_ORIGIN",
-                          "%s:%s".formatted(this.getClass().getSimpleName(), getOperationId()))
-                      .addHeader("EV_TRACEID", traceId));
               logger.info("{} END...{}ms", getTag(traceId), System.currentTimeMillis() - timeStart);
-              return Future.succeededFuture();
+              boolean trace = opts.getBoolean("trace", false);
+              return trace
+                  ? vertx
+                      .eventBus()
+                      .request(
+                          CommonUtils.prepareEventBusAddress(TraceLogVerticle.class, "SAVE_LOG"),
+                          JsonObject.of()
+                              .put("in", JsonObject.mapFrom(in))
+                              .put("out", JsonObject.mapFrom(out.result()))
+                              .put("opts", opts)
+                              .put("isError", out.result().isError()),
+                          new DeliveryOptions()
+                              .addHeader(
+                                  "EV_ORIGIN",
+                                  "%s:%s"
+                                      .formatted(this.getClass().getSimpleName(), getOperationId()))
+                              .addHeader("EV_TRACEID", traceId))
+                  : Future.succeededFuture();
             });
   }
 
@@ -114,11 +122,11 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
   }
 
   private String getTag(String traceId) {
-    return "[%s:%s:%s]".formatted(traceId, this.getClass().getSimpleName(), getOperationId());
+    return ":%s:%s:%s:".formatted(traceId, this.getClass().getSimpleName(), getOperationId());
   }
 
-  public final void setEventBus(EventBus eventBus) {
-    this.eventBus = eventBus;
+  public final void setVertx(Vertx vertx) {
+    this.vertx = vertx;
   }
 
   public final void setRepository(BaseRepository repository) {

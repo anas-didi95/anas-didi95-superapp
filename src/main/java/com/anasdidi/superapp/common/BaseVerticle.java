@@ -58,7 +58,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
             o -> {
               this.serviceMap.forEach(
                   (k, v) -> {
-                    v.setEventBus(vertx.eventBus());
+                    v.setVertx(vertx);
                     v.setRepository(this.repository);
                   });
 
