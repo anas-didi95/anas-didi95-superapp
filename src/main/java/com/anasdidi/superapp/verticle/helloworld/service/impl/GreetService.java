@@ -18,7 +18,7 @@ public class GreetService extends HelloWorldService<HelloWorldGreetReqDto, Hello
 
   @Override
   protected Future<OutboundDto<HelloWorldGreetResDto>> handle(
-      InboundDto<HelloWorldGreetReqDto> dto, JsonObject opts) {
+      InboundDto<HelloWorldGreetReqDto> dto, Map<String, Object> opts) {
     String lang = dto.query().getString("lang", "eng");
     String value =
         switch (lang) {

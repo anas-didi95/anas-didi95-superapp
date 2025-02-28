@@ -10,6 +10,7 @@ import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.jdbcclient.JDBCConnectOptions;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.PoolOptions;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -108,7 +109,9 @@ public abstract class BaseVerticle extends AbstractVerticle {
               continue;
             }
 
-            route.get().addHandler(ctx -> service.get().process(ctx, value.getJsonObject("opts")));
+            Map<String, Object> opts =
+                Collections.unmodifiableMap(value.getJsonObject("opts", JsonObject.of()).getMap());
+            route.get().addHandler(ctx -> service.get().process(ctx, opts));
             logger.info(
                 "[{}:processRouter] Register route {}...{}",
                 this.getClass().getSimpleName(),
@@ -160,10 +163,9 @@ public abstract class BaseVerticle extends AbstractVerticle {
             }
 
             String address = CommonUtils.prepareEventBusAddress(this.getClass(), eventType.get());
-            vertx
-                .eventBus()
-                .consumer(address)
-                .handler(msg -> service.get().process(msg, value.getJsonObject("opts")));
+            Map<String, Object> opts =
+                Collections.unmodifiableMap(value.getJsonObject("opts", JsonObject.of()).getMap());
+            vertx.eventBus().consumer(address).handler(msg -> service.get().process(msg, opts));
             logger.info(
                 "[{}:processEventBus] Register event bus {}...{}",
                 this.getClass().getSimpleName(),

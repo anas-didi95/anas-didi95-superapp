@@ -23,7 +23,7 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
 
   @Override
   protected Future<OutboundDto<AuthLoginResDto>> handle(
-      InboundDto<AuthLoginReqDto> dto, JsonObject opts) {
+      InboundDto<AuthLoginReqDto> dto, Map<String, Object> opts) {
     return Future.succeededFuture(new OutboundDto<>(new AuthLoginResDto("1122334455"), false));
   }
 

@@ -30,7 +30,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
   public abstract String getOperationId();
 
-  protected abstract Future<OutboundDto<B>> handle(InboundDto<A> dto, JsonObject opts);
+  protected abstract Future<OutboundDto<B>> handle(InboundDto<A> dto, Map<String, Object> opts);
 
   protected abstract A parseMessage(JsonObject body, MultiMap headers);
 
@@ -38,7 +38,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
   protected abstract JsonObject preparePath(Map<String, RequestParameter> path);
 
-  public void process(RoutingContext ctx, JsonObject opts) {
+  public void process(RoutingContext ctx, Map<String, Object> opts) {
     String traceId = ctx.get("traceId");
     long timeStart = System.currentTimeMillis();
     logger.info("{} START...", getTag(traceId));
@@ -74,7 +74,11 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
         .eventually(
             () -> {
               logger.info("{} END...{}ms", getTag(traceId), System.currentTimeMillis() - timeStart);
-              boolean trace = opts.getBoolean("trace", false);
+              boolean trace =
+                  Optional.ofNullable(opts.get("trace"))
+                      .map(String::valueOf)
+                      .map(Boolean::parseBoolean)
+                      .orElse(false);
               return trace
                   ? vertx
                       .eventBus()
@@ -95,7 +99,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
             });
   }
 
-  public void process(Message<Object> msg, JsonObject opts) {
+  public void process(Message<Object> msg, Map<String, Object> opts) {
     String traceId = msg.headers().get("EV_TRACEID");
     String origin = msg.headers().get("EV_ORIGIN");
     long timeStart = System.currentTimeMillis();
