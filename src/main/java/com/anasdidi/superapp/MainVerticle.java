@@ -15,6 +15,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.PubSecKeyOptions;
+import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.openapi.router.RequestExtractor;
@@ -41,6 +44,7 @@ public class MainVerticle extends AbstractVerticle {
   public void start(Promise<Void> startPromise) throws Exception {
     long timeStart = System.currentTimeMillis();
     Future<JsonObject> config = processConfig();
+    Future<Void> appConfig = config.compose(this::prepareAppConfig);
     Future<RouterBuilder> routerBuilder =
         config.flatMap(o -> processOpenApi(o.getJsonObject("app").getString("openApiPath")));
     Future<CompositeFuture> verticle =
@@ -53,7 +57,7 @@ public class MainVerticle extends AbstractVerticle {
                         Arrays.asList(
                             new HelloWorldVerticle(), new TraceLogVerticle(), new AuthVerticle())));
 
-    Future.all(config, routerBuilder, verticle)
+    Future.all(config, appConfig, routerBuilder, verticle)
         .onComplete(
             o -> {
               logger.info("[start] All verticles started...{}", verticle.isComplete());
@@ -158,6 +162,22 @@ public class MainVerticle extends AbstractVerticle {
                           logger.info("[processConfig] Get version...{}", oo.getString("version"));
                         },
                         oo -> logger.error("Fail to get app config!", oo)));
+  }
+
+  private Future<Void> prepareAppConfig(JsonObject config) {
+    return Future.future(
+        promise -> {
+          JsonObject security = config.getJsonObject("app").getJsonObject("security");
+          AppConfig.INSTANCE.setJwtAuth(
+              JWTAuth.create(
+                  vertx,
+                  new JWTAuthOptions()
+                      .addPubSecKey(
+                          new PubSecKeyOptions()
+                              .setAlgorithm("HS256")
+                              .setBuffer(security.getString("secret")))));
+          promise.complete();
+        });
   }
 
   private Future<RouterBuilder> processOpenApi(String path) {

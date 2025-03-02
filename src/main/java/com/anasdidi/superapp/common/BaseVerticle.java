@@ -1,13 +1,11 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
 package com.anasdidi.superapp.common;
 
+import com.anasdidi.superapp.AppConfig;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.PubSecKeyOptions;
-import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.web.handler.AuthenticationHandler;
 import io.vertx.ext.web.handler.ChainAuthHandler;
 import io.vertx.ext.web.handler.JWTAuthHandler;
@@ -122,15 +120,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
                 route.get().getOperation().getSecurityRequirements()) {
               for (String sName : security.getNames()) {
                 if (sName.equals("bearerAuth")) {
-                  authList.add(
-                      JWTAuthHandler.create(
-                          JWTAuth.create(
-                              vertx,
-                              new JWTAuthOptions()
-                                  .addPubSecKey(
-                                      new PubSecKeyOptions()
-                                          .setAlgorithm("HS256")
-                                          .setBuffer("secret")))));
+                  authList.add(JWTAuthHandler.create(AppConfig.INSTANCE.getJwtAuth()));
                 }
               }
             }

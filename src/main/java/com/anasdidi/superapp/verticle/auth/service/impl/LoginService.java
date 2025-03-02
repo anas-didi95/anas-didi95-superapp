@@ -1,6 +1,7 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
 package com.anasdidi.superapp.verticle.auth.service.impl;
 
+import com.anasdidi.superapp.AppConfig;
 import com.anasdidi.superapp.verticle.auth.dto.AuthLoginReqDto;
 import com.anasdidi.superapp.verticle.auth.dto.AuthLoginResDto;
 import com.anasdidi.superapp.verticle.auth.dto.model.AuthUser;
@@ -9,10 +10,7 @@ import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.JWTOptions;
-import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.auth.jwt.JWTAuthOptions;
-import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.openapi.validation.RequestParameter;
 import java.util.Map;
 
@@ -30,12 +28,7 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
   @Override
   protected Future<OutboundDto<AuthLoginResDto>> handle(
       InboundDto<AuthLoginReqDto> dto, Map<String, Object> opts) {
-    JWTAuth jwt =
-        JWTAuth.create(
-            getVertx(),
-            new JWTAuthOptions()
-                .addPubSecKey(new PubSecKeyOptions().setAlgorithm("HS256").setBuffer("secret")));
-    JWTAuthHandler.create(jwt);
+    JWTAuth jwt = AppConfig.INSTANCE.getJwtAuth();
     AuthUser user = new AuthUser("USER_ID_123");
     return Future.succeededFuture(
         new OutboundDto<>(
