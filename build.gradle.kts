@@ -40,6 +40,7 @@ dependencies {
   implementation("io.vertx:vertx-config-yaml")
   implementation("io.vertx:vertx-jdbc-client")
   implementation("io.vertx:vertx-sql-client-templates")
+  implementation("io.vertx:vertx-auth-jwt")
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
 

@@ -33,6 +33,10 @@ public class MainVerticle extends AbstractVerticle {
 
   private static final Logger logger = LogManager.getLogger(MainVerticle.class);
 
+  static {
+    System.setProperty("io.vertx.web.router.setup.lenient", "true");
+  }
+
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
     long timeStart = System.currentTimeMillis();

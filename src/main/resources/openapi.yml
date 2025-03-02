@@ -27,6 +27,8 @@ paths:
       description: Greet
       summary: Greet
       operationId: greet
+      security:
+        - bearerAuth: []
       parameters:
         - name: lang
           in: query
@@ -89,3 +91,9 @@ components:
         accessToken:
           type: string
           nullable: false
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

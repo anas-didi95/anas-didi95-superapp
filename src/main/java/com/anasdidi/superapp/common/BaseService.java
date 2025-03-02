@@ -133,6 +133,10 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     this.vertx = vertx;
   }
 
+  public final Vertx getVertx() {
+    return this.vertx;
+  }
+
   public final void setRepository(BaseRepository repository) {
     this.repository = repository;
   }

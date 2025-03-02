@@ -5,11 +5,19 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.PubSecKeyOptions;
+import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.auth.jwt.JWTAuthOptions;
+import io.vertx.ext.web.handler.AuthenticationHandler;
+import io.vertx.ext.web.handler.ChainAuthHandler;
+import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.openapi.router.OpenAPIRoute;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.jdbcclient.JDBCConnectOptions;
 import io.vertx.jdbcclient.JDBCPool;
+import io.vertx.openapi.contract.SecurityRequirement;
 import io.vertx.sqlclient.PoolOptions;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +115,34 @@ public abstract class BaseVerticle extends AbstractVerticle {
                   this.getClass().getSimpleName(),
                   key);
               continue;
+            }
+
+            List<AuthenticationHandler> authList = new ArrayList<>();
+            for (SecurityRequirement security :
+                route.get().getOperation().getSecurityRequirements()) {
+              for (String sName : security.getNames()) {
+                if (sName.equals("bearerAuth")) {
+                  authList.add(
+                      JWTAuthHandler.create(
+                          JWTAuth.create(
+                              vertx,
+                              new JWTAuthOptions()
+                                  .addPubSecKey(
+                                      new PubSecKeyOptions()
+                                          .setAlgorithm("HS256")
+                                          .setBuffer("secret")))));
+                }
+              }
+            }
+            if (!authList.isEmpty()) {
+              ChainAuthHandler authHandler = ChainAuthHandler.any();
+              authList.forEach(authHandler::add);
+              route.get().addHandler(authList.get(0));
+              logger.info(
+                  "[{}:processRouter] Register security {}...{}",
+                  this.getClass().getSimpleName(),
+                  route.get().getOperation().getOpenAPIPath(),
+                  key);
             }
 
             Map<String, Object> opts =
