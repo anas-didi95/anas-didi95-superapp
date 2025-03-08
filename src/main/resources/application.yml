@@ -4,6 +4,9 @@ app:
 
   security:
     secret: test123
+    issuer: anas-didi95@superapp
+    expiresInSeconds: 86400
+    audience: DEV,SCHOOL
 
   verticle:
     HelloWorldVerticle:

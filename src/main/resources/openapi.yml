@@ -2,7 +2,7 @@ openapi: 3.0.3
 
 info:
   title: Anas Juwaidi's SuperApp - OpenAPI 3.0
-  description: |-
+  description: |
     **Anas Juwaidi's SuperApp**
   termsOfService: http://swagger.io/terms/
   contact:

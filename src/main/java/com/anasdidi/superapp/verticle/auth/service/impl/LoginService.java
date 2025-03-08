@@ -12,6 +12,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.openapi.validation.RequestParameter;
+import java.util.Arrays;
 import java.util.Map;
 
 public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> {
@@ -35,7 +36,9 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
             new AuthLoginResDto(
                 jwt.generateToken(
                     JsonObject.mapFrom(user),
-                    new JWTOptions().setSubject(user.userId()).setIssuer("super-app"))),
+                    new JWTOptions(AppConfig.INSTANCE.getJwtOptions())
+                        .setSubject(user.userId())
+                        .setAudience(Arrays.asList("DEV")))),
             false));
   }
 

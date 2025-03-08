@@ -15,6 +15,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
@@ -168,10 +169,16 @@ public class MainVerticle extends AbstractVerticle {
     return Future.future(
         promise -> {
           JsonObject security = config.getJsonObject("app").getJsonObject("security");
+          AppConfig.INSTANCE.setJwtOptions(
+              new JWTOptions()
+                  .setIssuer(security.getString("issuer"))
+                  .setExpiresInSeconds(security.getInteger("expiresInSeconds"))
+                  .setAudience(Arrays.asList(security.getString("audience").split(","))));
           AppConfig.INSTANCE.setJwtAuth(
               JWTAuth.create(
                   vertx,
                   new JWTAuthOptions()
+                      .setJWTOptions(AppConfig.INSTANCE.getJwtOptions())
                       .addPubSecKey(
                           new PubSecKeyOptions()
                               .setAlgorithm("HS256")
