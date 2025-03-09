@@ -32,7 +32,7 @@ public class GreetService extends HelloWorldService<HelloWorldGreetReqDto, Hello
 
   @Override
   protected JsonObject prepareQuery(Map<String, RequestParameter> query) {
-    return JsonObject.of("lang", query.get("lang").getString("eng"));
+    return JsonObject.of().put("lang", query.get("lang").getString("eng"));
   }
 
   @Override
@@ -42,11 +42,11 @@ public class GreetService extends HelloWorldService<HelloWorldGreetReqDto, Hello
 
   @Override
   protected HelloWorldGreetReqDto parseMessage(JsonObject body, MultiMap headers) {
-    throw new UnsupportedOperationException("Unimplemented method 'parseMessage'");
+    return new HelloWorldGreetReqDto();
   }
 
   @Override
   protected JsonObject preparePath(Map<String, RequestParameter> path) {
-    return JsonObject.of();
+    return null;
   }
 }

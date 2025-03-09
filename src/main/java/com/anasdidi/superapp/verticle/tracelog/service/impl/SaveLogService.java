@@ -66,11 +66,11 @@ public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, Trace
 
   @Override
   protected JsonObject prepareQuery(Map<String, RequestParameter> query) {
-    return JsonObject.of();
+    return null;
   }
 
   @Override
   protected JsonObject preparePath(Map<String, RequestParameter> path) {
-    return JsonObject.of();
+    return null;
   }
 }
