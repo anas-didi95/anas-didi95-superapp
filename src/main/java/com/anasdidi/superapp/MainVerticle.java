@@ -2,6 +2,7 @@
 package com.anasdidi.superapp;
 
 import com.anasdidi.superapp.common.BaseVerticle;
+import com.anasdidi.superapp.common.CommonConstants;
 import com.anasdidi.superapp.common.CommonUtils;
 import com.anasdidi.superapp.verticle.auth.AuthVerticle;
 import com.anasdidi.superapp.verticle.helloworld.HelloWorldVerticle;
@@ -49,7 +50,8 @@ public class MainVerticle extends AbstractVerticle {
     Future<JsonObject> config = processConfig();
     Future<Void> appConfig = config.compose(this::prepareAppConfig);
     Future<RouterBuilder> routerBuilder =
-        config.flatMap(o -> processOpenApi(o.getJsonObject("app").getString("openApiPath")));
+        config.flatMap(
+            o -> processOpenApi(o.getJsonObject(CommonConstants.CFG_APP).getString("openApiPath")));
     Future<CompositeFuture> verticle =
         Future.all(config, routerBuilder)
             .compose(
@@ -110,7 +112,7 @@ public class MainVerticle extends AbstractVerticle {
                       });
               mainRouter.route("/*").subRouter(router);
 
-              int port = config.result().getJsonObject("app").getInteger("port");
+              int port = config.result().getJsonObject(CommonConstants.CFG_APP).getInteger("port");
               vertx
                   .createHttpServer()
                   .requestHandler(mainRouter)
@@ -160,7 +162,7 @@ public class MainVerticle extends AbstractVerticle {
                         oo -> {
                           logger.info(
                               "[processConfig] Get app config...{}",
-                              Objects.nonNull(oo.getJsonObject("app")));
+                              Objects.nonNull(oo.getJsonObject(CommonConstants.CFG_APP)));
                           logger.info("[processConfig] Get version...{}", oo.getString("version"));
                         },
                         oo -> logger.error("Fail to get app config!", oo)));
@@ -169,7 +171,8 @@ public class MainVerticle extends AbstractVerticle {
   private Future<Void> prepareAppConfig(JsonObject config) {
     return Future.future(
         promise -> {
-          JsonObject security = config.getJsonObject("app").getJsonObject("security");
+          JsonObject security =
+              config.getJsonObject(CommonConstants.CFG_APP).getJsonObject("security");
           AppConfig.INSTANCE.setJwtOptions(
               new JWTOptions()
                   .setIssuer(security.getString("issuer"))
@@ -206,7 +209,7 @@ public class MainVerticle extends AbstractVerticle {
       RouterBuilder routerBuilder, JsonObject appConfig, List<BaseVerticle> verticleList) {
     BiFunction<JsonObject, BaseVerticle, JsonObject> vtxConfig =
         (o1, o2) ->
-            o1.getJsonObject("app")
+            o1.getJsonObject(CommonConstants.CFG_APP)
                 .getJsonObject("verticle")
                 .getJsonObject(o2.getClass().getSimpleName());
 
@@ -214,7 +217,8 @@ public class MainVerticle extends AbstractVerticle {
         verticleList.stream()
             .filter(
                 o -> {
-                  boolean enabled = vtxConfig.apply(appConfig, o).getBoolean("enabled", false);
+                  boolean enabled =
+                      vtxConfig.apply(appConfig, o).getBoolean(CommonConstants.CFG_ENABLED, false);
                   logger.info(
                       "[processVerticle] {} enabled...{}", o.getClass().getSimpleName(), enabled);
                   return enabled;

@@ -92,7 +92,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
             String key = handler.getKey();
             JsonObject value = (JsonObject) handler.getValue();
 
-            if (!value.getBoolean("enabled", false)) {
+            if (!value.getBoolean(CommonConstants.CFG_ENABLED, false)) {
               logger.warn(
                   "[{}:processRouter] Handler not enabled...{}",
                   this.getClass().getSimpleName(),
@@ -152,7 +152,8 @@ public abstract class BaseVerticle extends AbstractVerticle {
             }
 
             Map<String, Object> opts =
-                Collections.unmodifiableMap(value.getJsonObject("opts", JsonObject.of()).getMap());
+                Collections.unmodifiableMap(
+                    value.getJsonObject(CommonConstants.CFG_OPTS, JsonObject.of()).getMap());
             route.get().addHandler(ctx -> service.get().process(ctx, opts));
             logger.info(
                 "[{}:processRouter] Register route {}...{}",
@@ -178,7 +179,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
             String key = handler.getKey();
             JsonObject value = (JsonObject) handler.getValue();
 
-            if (!value.getBoolean("enabled", false)) {
+            if (!value.getBoolean(CommonConstants.CFG_ENABLED, false)) {
               logger.warn(
                   "[{}, processEventBus] Handler not enabled...{}",
                   this.getClass().getSimpleName(),
@@ -206,7 +207,8 @@ public abstract class BaseVerticle extends AbstractVerticle {
 
             String address = CommonUtils.prepareEBAddress(this.getClass(), eventType.get());
             Map<String, Object> opts =
-                Collections.unmodifiableMap(value.getJsonObject("opts", JsonObject.of()).getMap());
+                Collections.unmodifiableMap(
+                    value.getJsonObject(CommonConstants.CFG_OPTS, JsonObject.of()).getMap());
             vertx.eventBus().consumer(address).handler(msg -> service.get().process(msg, opts));
             logger.info(
                 "[{}:processEventBus] Register event bus {}...{}",
@@ -229,7 +231,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
           long timeStart = System.currentTimeMillis();
           String version = config().getString("version");
           String env = config().getString("env");
-          JsonObject db = config().getJsonObject("db");
+          JsonObject db = config().getJsonObject(CommonConstants.CFG_DB);
           String labels = String.join(",", getLiquibaseLabel());
           String argChangelog = CommonArgumentNames.CHANGELOG_FILE.getArgumentName();
           String argUrl = CommonArgumentNames.URL.getArgumentName();
@@ -299,7 +301,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
     return Future.future(
         promise -> {
           long timeStart = System.currentTimeMillis();
-          JsonObject db = config().getJsonObject("db");
+          JsonObject db = config().getJsonObject(CommonConstants.CFG_DB);
 
           if (Objects.isNull(db)) {
             logger.warn(

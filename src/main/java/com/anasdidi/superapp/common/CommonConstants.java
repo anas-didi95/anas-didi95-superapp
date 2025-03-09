@@ -3,6 +3,11 @@ package com.anasdidi.superapp.common;
 
 public final class CommonConstants {
 
+  public static final String CFG_APP = "app";
+  public static final String CFG_DB = "db";
+  public static final String CFG_ENABLED = "enabled";
+  public static final String CFG_OPTS = "opts";
+
   public static final String EB_HEADER_ORIGIN = "EB_ORIGIN";
   public static final String EB_HEADER_TRACEID = "EB_TRACEID";
   public static final String EB_HEADER_PRINCIPAL = "EB_USERPRCP";
