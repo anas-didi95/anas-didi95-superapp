@@ -2,6 +2,7 @@
 package com.anasdidi.superapp;
 
 import com.anasdidi.superapp.common.BaseVerticle;
+import com.anasdidi.superapp.common.CommonUtils;
 import com.anasdidi.superapp.verticle.auth.AuthVerticle;
 import com.anasdidi.superapp.verticle.helloworld.HelloWorldVerticle;
 import com.anasdidi.superapp.verticle.tracelog.TraceLogVerticle;
@@ -28,7 +29,6 @@ import io.vertx.openapi.contract.OpenAPIContract;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
@@ -105,8 +105,7 @@ public class MainVerticle extends AbstractVerticle {
                   .route()
                   .handler(
                       ctx -> {
-                        UUID traceId = UUID.randomUUID();
-                        ctx.put("traceId", traceId.toString());
+                        CommonUtils.setTraceId(ctx);
                         ctx.next();
                       });
               mainRouter.route("/*").subRouter(router);

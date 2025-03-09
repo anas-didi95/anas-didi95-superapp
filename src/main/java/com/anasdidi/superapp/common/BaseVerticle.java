@@ -134,7 +134,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
                   .get()
                   .addHandler(
                       ctx -> {
-                        String traceId = ctx.get("traceId");
+                        String traceId = CommonUtils.getTraceId(ctx);
                         String origin = "AuthHandler";
                         String address =
                             CommonUtils.prepareEventBusAddress(AuthVerticle.class, "CHECK_JWT");

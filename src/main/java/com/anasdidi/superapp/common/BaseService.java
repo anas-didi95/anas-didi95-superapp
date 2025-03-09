@@ -41,7 +41,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
   protected abstract JsonObject preparePath(Map<String, RequestParameter> path);
 
   public void process(RoutingContext ctx, Map<String, Object> opts) {
-    String traceId = ctx.get("traceId");
+    String traceId = CommonUtils.getTraceId(ctx);
     long timeStart = System.currentTimeMillis();
     logger.info("{} START...", getTag(traceId));
 
