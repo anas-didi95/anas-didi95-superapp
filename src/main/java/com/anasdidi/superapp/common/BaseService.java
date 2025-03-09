@@ -89,10 +89,10 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
                       traceId,
                       null,
                       JsonObject.of()
-                          .put("in", JsonObject.mapFrom(in))
-                          .put("out", JsonObject.mapFrom(out.result()))
-                          .put("opts", opts)
-                          .put("isError", out.result().isError()))
+                          .put(CommonConstants.DTO_IN, JsonObject.mapFrom(in))
+                          .put(CommonConstants.DTO_OUT, JsonObject.mapFrom(out.result()))
+                          .put(CommonConstants.DTO_OPTS, opts)
+                          .put(CommonConstants.DTO_ISERROR, out.result().isError()))
                   : Future.succeededFuture();
             });
   }

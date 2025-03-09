@@ -57,10 +57,10 @@ public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, Trace
   protected TraceLogSaveLogReqDto parseMessage(JsonObject body, MultiMap headers) {
     String traceId = headers.get(CommonConstants.EB_HEADER_TRACEID);
     String origin = headers.get(CommonConstants.EB_HEADER_ORIGIN);
-    JsonObject in = body.getJsonObject("in");
-    JsonObject out = body.getJsonObject("out");
-    JsonObject opts = body.getJsonObject("opts");
-    Boolean isError = body.getBoolean("isError");
+    JsonObject in = body.getJsonObject(CommonConstants.DTO_IN);
+    JsonObject out = body.getJsonObject(CommonConstants.DTO_OUT);
+    JsonObject opts = body.getJsonObject(CommonConstants.DTO_OPTS);
+    Boolean isError = body.getBoolean(CommonConstants.DTO_ISERROR);
     return new TraceLogSaveLogReqDto(traceId, origin, in, out, opts, isError);
   }
 
