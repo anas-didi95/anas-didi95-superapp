@@ -78,6 +78,9 @@ components:
           nullable: false
     AuthLoginReqDto:
       type: object
+      required:
+        - username
+        - password
       properties:
         username:
           type: string
