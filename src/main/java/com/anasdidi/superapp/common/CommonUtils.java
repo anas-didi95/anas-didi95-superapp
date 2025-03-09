@@ -14,7 +14,6 @@ import java.util.UUID;
 public final class CommonUtils {
 
   private static final String EVENTBUS_ADDR_FMT = "%s:%s";
-  private static final String CTX_TRACEID = "traceId";
 
   public static final String prepareEBAddress(Class<?> clazz, String eventType) {
     return prepareEBAddress(clazz.getSimpleName(), eventType);
@@ -51,10 +50,10 @@ public final class CommonUtils {
   }
 
   public static final void setTraceId(RoutingContext ctx) {
-    ctx.put(CTX_TRACEID, UUID.randomUUID().toString());
+    ctx.put(CommonConstants.CTX_TRACEID, UUID.randomUUID().toString());
   }
 
   public static final String getTraceId(RoutingContext ctx) {
-    return ctx.get(CTX_TRACEID);
+    return ctx.get(CommonConstants.CTX_TRACEID);
   }
 }

@@ -1,6 +1,8 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
 package com.anasdidi.superapp.common;
 
+import com.anasdidi.superapp.error.BaseError;
+import com.anasdidi.superapp.error.E000InternalServerError;
 import com.anasdidi.superapp.verticle.tracelog.TraceLogVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
@@ -70,7 +72,13 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
             },
             e -> {
               logger.error("{} ERR :: {}", getTag(traceId), e.getMessage());
-              ctx.fail(500, e);
+              if (e instanceof E000InternalServerError ee) {
+                ctx.fail(500, ee);
+              } else if (e instanceof BaseError ee) {
+                ctx.fail(400, ee);
+              } else {
+                ctx.fail(500, new E000InternalServerError(e.getMessage()));
+              }
             })
         .eventually(
             () -> {

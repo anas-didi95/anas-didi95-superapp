@@ -4,6 +4,9 @@ package com.anasdidi.superapp;
 import com.anasdidi.superapp.common.BaseVerticle;
 import com.anasdidi.superapp.common.CommonConstants;
 import com.anasdidi.superapp.common.CommonUtils;
+import com.anasdidi.superapp.error.BaseError;
+import com.anasdidi.superapp.error.E000InternalServerError;
+import com.anasdidi.superapp.error.E001ResourceNotFoundError;
 import com.anasdidi.superapp.verticle.auth.AuthVerticle;
 import com.anasdidi.superapp.verticle.helloworld.HelloWorldVerticle;
 import com.anasdidi.superapp.verticle.tracelog.TraceLogVerticle;
@@ -26,6 +29,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.openapi.router.RequestExtractor;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
+import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContract;
 import java.util.Arrays;
 import java.util.List;
@@ -66,41 +70,7 @@ public class MainVerticle extends AbstractVerticle {
         .onComplete(
             o -> {
               logger.info("[start] All verticles started...{}", verticle.isComplete());
-              Router router = routerBuilder.result().createRouter();
-              router.errorHandler(
-                  404,
-                  routingContext -> {
-                    JsonObject errorObject =
-                        new JsonObject()
-                            .put("code", 404)
-                            .put(
-                                "message",
-                                (routingContext.failure() != null)
-                                    ? routingContext.failure().getMessage()
-                                    : "Not Found");
-                    routingContext
-                        .response()
-                        .setStatusCode(404)
-                        .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                        .end(errorObject.encode());
-                  });
-              router.errorHandler(
-                  400,
-                  routingContext -> {
-                    JsonObject errorObject =
-                        new JsonObject()
-                            .put("code", 400)
-                            .put(
-                                "message",
-                                (routingContext.failure() != null)
-                                    ? routingContext.failure().getMessage()
-                                    : "Validation Exception");
-                    routingContext
-                        .response()
-                        .setStatusCode(400)
-                        .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                        .end(errorObject.encode());
-                  });
+
               Router mainRouter = Router.router(vertx);
               mainRouter.route().handler(BodyHandler.create());
               mainRouter
@@ -110,7 +80,40 @@ public class MainVerticle extends AbstractVerticle {
                         CommonUtils.setTraceId(ctx);
                         ctx.next();
                       });
-              mainRouter.route("/*").subRouter(router);
+              mainRouter.route("/*").subRouter(routerBuilder.result().createRouter());
+              mainRouter.errorHandler(
+                  500,
+                  ctx -> {
+                    E000InternalServerError e =
+                        ctx.failure() instanceof E000InternalServerError
+                            ? (E000InternalServerError) ctx.failure()
+                            : new E000InternalServerError(ctx.failure().getMessage());
+                    ctx.response()
+                        .setStatusCode(500)
+                        .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                        .end(e.getResponseBody(ctx).encode());
+                  });
+              mainRouter.errorHandler(
+                  404,
+                  ctx -> {
+                    E001ResourceNotFoundError e = new E001ResourceNotFoundError();
+                    ctx.response()
+                        .setStatusCode(404)
+                        .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                        .end(e.getResponseBody(ctx).encode());
+                  });
+              mainRouter.errorHandler(
+                  400,
+                  ctx -> {
+                    if (ctx.failure() instanceof BaseError ee) {
+                      ctx.response()
+                          .setStatusCode(400)
+                          .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                          .end(ee.getResponseBody(ctx).encode());
+                    } else {
+                      ctx.fail(500, ctx.failure());
+                    }
+                  });
 
               int port = config.result().getJsonObject(CommonConstants.CFG_APP).getInteger("port");
               vertx

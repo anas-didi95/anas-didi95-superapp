@@ -3,6 +3,8 @@ package com.anasdidi.superapp.common;
 
 public final class CommonConstants {
 
+  public static final String CTX_TRACEID = "traceId";
+
   public static final String CFG_APP = "app";
   public static final String CFG_DB = "db";
   public static final String CFG_ENABLED = "enabled";
