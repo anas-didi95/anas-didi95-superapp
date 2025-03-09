@@ -8,6 +8,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.openapi.validation.RequestParameter;
@@ -30,7 +31,8 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
 
   public abstract String getOperationId();
 
-  protected abstract Future<OutboundDto<B>> handle(InboundDto<A> dto, Map<String, Object> opts);
+  protected abstract Future<OutboundDto<B>> handle(
+      User user, InboundDto<A> dto, Map<String, Object> opts);
 
   protected abstract A parseMessage(JsonObject body, MultiMap headers);
 
@@ -60,7 +62,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     InboundDto<A> in = new InboundDto<>(body, path, query);
     logger.info("{} IN :: {}", getTag(traceId), in);
 
-    Future<OutboundDto<B>> out = handle(in, opts);
+    Future<OutboundDto<B>> out = handle(ctx.user(), in, opts);
 
     out.onComplete(
             o -> {
@@ -102,6 +104,11 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
   public void process(Message<Object> msg, Map<String, Object> opts) {
     String traceId = msg.headers().get("EV_TRACEID");
     String origin = msg.headers().get("EV_ORIGIN");
+    User user =
+        Optional.ofNullable(msg.headers().get("EV_USERPRCP"))
+            .map(JsonObject::new)
+            .map(User::create)
+            .orElse(null);
     long timeStart = System.currentTimeMillis();
     logger.info("{} START...origin={}", getTag(traceId), origin);
 
@@ -109,14 +116,16 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     InboundDto<A> in = new InboundDto<>(message, null, null);
     logger.info("{} IN :: {}", getTag(traceId), in);
 
-    Future<OutboundDto<B>> out = handle(in, opts);
+    Future<OutboundDto<B>> out = handle(user, in, opts);
 
     out.onComplete(
             o -> {
               logger.info("{} OUT :: {}", getTag(traceId), o.result());
+              msg.reply(JsonObject.mapFrom(o));
             },
             e -> {
               logger.error("{} ERR :: {}", getTag(traceId), e.getMessage());
+              msg.reply(e);
             })
         .eventually(
             () -> {
@@ -126,7 +135,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
   }
 
   private String getTag(String traceId) {
-    return ":%s:%s:%s:".formatted(traceId, this.getClass().getSimpleName(), getOperationId());
+    return "#%s#%s#%s#".formatted(traceId, this.getClass().getSimpleName(), getOperationId());
   }
 
   public final void setVertx(Vertx vertx) {

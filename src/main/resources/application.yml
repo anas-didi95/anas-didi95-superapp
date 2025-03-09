@@ -46,3 +46,6 @@ app:
       handler:
         login:
           enabled: true
+        checkJwt:
+          enabled: true
+          eventType: CHECK_JWT

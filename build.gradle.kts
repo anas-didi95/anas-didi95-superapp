@@ -47,6 +47,7 @@ dependencies {
   implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
   implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
   implementation("org.liquibase:liquibase-core:$liquibaseVersion")
   implementation("com.h2database:h2:$h2Version")
   implementation("io.agroal:agroal-pool:$agroalVersion")

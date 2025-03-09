@@ -10,6 +10,7 @@ import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.JWTOptions;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.openapi.validation.RequestParameter;
 import java.util.Arrays;
@@ -28,16 +29,16 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
 
   @Override
   protected Future<OutboundDto<AuthLoginResDto>> handle(
-      InboundDto<AuthLoginReqDto> dto, Map<String, Object> opts) {
+      User user, InboundDto<AuthLoginReqDto> dto, Map<String, Object> opts) {
     JWTAuth jwt = AppConfig.INSTANCE.getJwtAuth();
-    AuthUser user = new AuthUser("USER_ID_123");
+    AuthUser userData = new AuthUser("USER_ID_123");
     return Future.succeededFuture(
         new OutboundDto<>(
             new AuthLoginResDto(
                 jwt.generateToken(
-                    JsonObject.mapFrom(user),
+                    JsonObject.mapFrom(userData),
                     new JWTOptions(AppConfig.INSTANCE.getJwtOptions())
-                        .setSubject(user.userId())
+                        .setSubject(userData.userId())
                         .setAudience(Arrays.asList("DEV")))),
             false));
   }

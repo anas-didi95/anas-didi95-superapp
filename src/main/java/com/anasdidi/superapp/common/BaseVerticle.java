@@ -2,9 +2,11 @@
 package com.anasdidi.superapp.common;
 
 import com.anasdidi.superapp.AppConfig;
+import com.anasdidi.superapp.verticle.auth.AuthVerticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.handler.AuthenticationHandler;
 import io.vertx.ext.web.handler.ChainAuthHandler;
@@ -127,7 +129,25 @@ public abstract class BaseVerticle extends AbstractVerticle {
             if (!authList.isEmpty()) {
               ChainAuthHandler authHandler = ChainAuthHandler.any();
               authList.forEach(authHandler::add);
-              route.get().addHandler(authList.get(0));
+              route.get().addHandler(authHandler);
+              route
+                  .get()
+                  .addHandler(
+                      ctx -> {
+                        String traceId = ctx.get("traceId");
+                        String origin = "AuthHandler";
+                        String address =
+                            CommonUtils.prepareEventBusAddress(AuthVerticle.class, "CHECK_JWT");
+                        vertx
+                            .eventBus()
+                            .request(
+                                address,
+                                null,
+                                new DeliveryOptions()
+                                    .addHeader("EV_ORIGIN", origin)
+                                    .addHeader("EV_TRACEID", traceId))
+                            .onComplete(o -> ctx.next(), e -> ctx.fail(e));
+                      });
               logger.info(
                   "[{}:processRouter] Register security {}...{}",
                   this.getClass().getSimpleName(),

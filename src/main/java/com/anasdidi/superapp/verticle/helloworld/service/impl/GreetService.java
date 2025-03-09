@@ -7,6 +7,7 @@ import com.anasdidi.superapp.verticle.helloworld.service.HelloWorldService;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.User;
 import io.vertx.openapi.validation.RequestParameter;
 import java.util.Map;
 
@@ -18,7 +19,7 @@ public class GreetService extends HelloWorldService<HelloWorldGreetReqDto, Hello
 
   @Override
   protected Future<OutboundDto<HelloWorldGreetResDto>> handle(
-      InboundDto<HelloWorldGreetReqDto> dto, Map<String, Object> opts) {
+      User user, InboundDto<HelloWorldGreetReqDto> dto, Map<String, Object> opts) {
     String lang = dto.query().getString("lang", "eng");
     String value =
         switch (lang) {

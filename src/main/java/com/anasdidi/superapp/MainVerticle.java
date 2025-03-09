@@ -15,6 +15,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
@@ -39,6 +40,7 @@ public class MainVerticle extends AbstractVerticle {
 
   static {
     System.setProperty("io.vertx.web.router.setup.lenient", "true");
+    DatabindCodec.mapper().findAndRegisterModules();
   }
 
   @Override

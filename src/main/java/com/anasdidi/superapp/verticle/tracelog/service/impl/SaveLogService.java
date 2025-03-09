@@ -8,6 +8,7 @@ import com.anasdidi.superapp.verticle.tracelog.service.TraceLogService;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.User;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
@@ -26,7 +27,7 @@ public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, Trace
 
   @Override
   protected Future<OutboundDto<TraceLogSaveLogResDto>> handle(
-      InboundDto<TraceLogSaveLogReqDto> dto, Map<String, Object> opts) {
+      User user, InboundDto<TraceLogSaveLogReqDto> dto, Map<String, Object> opts) {
     return Future.future(
         promise -> {
           Future<SqlConnection> conn = this.getRepository(TraceLogRepository.class).getConnection();
