@@ -6,7 +6,6 @@ import com.anasdidi.superapp.verticle.auth.AuthVerticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.handler.AuthenticationHandler;
 import io.vertx.ext.web.handler.ChainAuthHandler;
@@ -133,21 +132,18 @@ public abstract class BaseVerticle extends AbstractVerticle {
               route
                   .get()
                   .addHandler(
-                      ctx -> {
-                        String traceId = CommonUtils.getTraceId(ctx);
-                        String origin = "AuthHandler";
-                        String address =
-                            CommonUtils.prepareEventBusAddress(AuthVerticle.class, "CHECK_JWT");
-                        vertx
-                            .eventBus()
-                            .request(
-                                address,
-                                null,
-                                new DeliveryOptions()
-                                    .addHeader("EV_ORIGIN", origin)
-                                    .addHeader("EV_TRACEID", traceId))
-                            .onComplete(o -> ctx.next(), e -> ctx.fail(e));
-                      });
+                      ctx ->
+                          CommonUtils.prepareEBRequest(
+                                  vertx.eventBus(),
+                                  AuthVerticle.class,
+                                  "CHECK_JWT",
+                                  "AuthHandler",
+                                  CommonUtils.getTraceId(ctx),
+                                  Map.of(
+                                      CommonConstants.EB_HEADER_PRINCIPAL,
+                                      ctx.user().principal().encode()),
+                                  null)
+                              .onComplete(o -> ctx.next(), e -> ctx.fail(e)));
               logger.info(
                   "[{}:processRouter] Register security {}...{}",
                   this.getClass().getSimpleName(),
@@ -208,7 +204,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
               continue;
             }
 
-            String address = CommonUtils.prepareEventBusAddress(this.getClass(), eventType.get());
+            String address = CommonUtils.prepareEBAddress(this.getClass(), eventType.get());
             Map<String, Object> opts =
                 Collections.unmodifiableMap(value.getJsonObject("opts", JsonObject.of()).getMap());
             vertx.eventBus().consumer(address).handler(msg -> service.get().process(msg, opts));

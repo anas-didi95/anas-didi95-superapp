@@ -5,7 +5,6 @@ import com.anasdidi.superapp.verticle.tracelog.TraceLogVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
@@ -82,30 +81,27 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
                       .map(Boolean::parseBoolean)
                       .orElse(false);
               return trace
-                  ? vertx
-                      .eventBus()
-                      .request(
-                          CommonUtils.prepareEventBusAddress(TraceLogVerticle.class, "SAVE_LOG"),
-                          JsonObject.of()
-                              .put("in", JsonObject.mapFrom(in))
-                              .put("out", JsonObject.mapFrom(out.result()))
-                              .put("opts", opts)
-                              .put("isError", out.result().isError()),
-                          new DeliveryOptions()
-                              .addHeader(
-                                  "EV_ORIGIN",
-                                  "%s:%s"
-                                      .formatted(this.getClass().getSimpleName(), getOperationId()))
-                              .addHeader("EV_TRACEID", traceId))
+                  ? CommonUtils.prepareEBRequest(
+                      vertx.eventBus(),
+                      TraceLogVerticle.class,
+                      "SAVE_LOG",
+                      "%s:%s".formatted(this.getClass().getSimpleName(), getOperationId()),
+                      traceId,
+                      null,
+                      JsonObject.of()
+                          .put("in", JsonObject.mapFrom(in))
+                          .put("out", JsonObject.mapFrom(out.result()))
+                          .put("opts", opts)
+                          .put("isError", out.result().isError()))
                   : Future.succeededFuture();
             });
   }
 
   public void process(Message<Object> msg, Map<String, Object> opts) {
-    String traceId = msg.headers().get("EV_TRACEID");
-    String origin = msg.headers().get("EV_ORIGIN");
+    String traceId = msg.headers().get(CommonConstants.EB_HEADER_TRACEID);
+    String origin = msg.headers().get(CommonConstants.EB_HEADER_ORIGIN);
     User user =
-        Optional.ofNullable(msg.headers().get("EV_USERPRCP"))
+        Optional.ofNullable(msg.headers().get(CommonConstants.EB_HEADER_PRINCIPAL))
             .map(JsonObject::new)
             .map(User::create)
             .orElse(null);
