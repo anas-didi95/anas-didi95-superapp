@@ -2,9 +2,11 @@
 package com.anasdidi.superapp.verticle.auth.service.impl;
 
 import com.anasdidi.superapp.AppConfig;
+import com.anasdidi.superapp.verticle.auth.AuthRepository;
 import com.anasdidi.superapp.verticle.auth.dto.AuthLoginReqDto;
 import com.anasdidi.superapp.verticle.auth.dto.AuthLoginResDto;
 import com.anasdidi.superapp.verticle.auth.dto.model.AuthUser;
+import com.anasdidi.superapp.verticle.auth.entity.UserEntity;
 import com.anasdidi.superapp.verticle.auth.service.AuthService;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
@@ -13,6 +15,7 @@ import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.openapi.validation.RequestParameter;
+import io.vertx.sqlclient.SqlConnection;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -30,17 +33,35 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
   @Override
   protected Future<OutboundDto<AuthLoginResDto>> handle(
       User user, InboundDto<AuthLoginReqDto> dto, Map<String, Object> opts) {
-    JWTAuth jwt = AppConfig.INSTANCE.getJwtAuth();
-    AuthUser userData = new AuthUser("USER_ID_123");
-    return Future.succeededFuture(
-        new OutboundDto<>(
-            new AuthLoginResDto(
-                jwt.generateToken(
-                    JsonObject.mapFrom(userData),
-                    new JWTOptions(AppConfig.INSTANCE.getJwtOptions())
-                        .setSubject(userData.userId())
-                        .setAudience(Arrays.asList("DEV")))),
-            false));
+    AuthRepository repo = getRepository(AuthRepository.class);
+    Future<SqlConnection> conn = repo.getConnection();
+    Future<UserEntity> entity =
+        conn.compose(o -> repo.getUserByUsername(o, dto.body().username()))
+            .andThen(
+                o -> {
+                  if (o.failed() || !o.result().getPassword().equals(dto.body().password())) {
+                    throw new RuntimeException("Invalid username/password!");
+                  }
+                });
+
+    return Future.future(
+        promise -> {
+          Future.all(conn, entity)
+              .onComplete(
+                  o -> {
+                    JWTAuth jwt = AppConfig.INSTANCE.getJwtAuth();
+                    AuthUser userData = new AuthUser(entity.result().getUsername());
+                    String accessToken =
+                        jwt.generateToken(
+                            JsonObject.mapFrom(userData),
+                            new JWTOptions(AppConfig.INSTANCE.getJwtOptions())
+                                .setSubject(entity.result().getId().toString())
+                                .setAudience(Arrays.asList("DEV")));
+                    promise.complete(new OutboundDto<>(new AuthLoginResDto(accessToken), false));
+                  },
+                  e -> promise.fail(e))
+              .eventually(() -> conn.compose(o -> o.close()));
+        });
   }
 
   @Override

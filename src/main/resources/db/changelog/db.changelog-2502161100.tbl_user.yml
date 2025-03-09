@@ -63,3 +63,19 @@ databaseChangeLog:
                   name: USERNAME
               - column:
                   name: IS_DEL
+
+  - changeSet:
+      id: db.changelog-2502161100.tbl_user-2
+      author: anas
+      labels: auth
+      context: dev
+      changes:
+        - sql:
+            dbms: h2
+            sql: |
+              INSERT INTO TBL_USER(ID, CREATE_BY, CREATE_DT, UPDATE_BY, UPDATE_DT, IS_DEL, USERNAME, PASSWORD, SALT)
+              VALUES('3b3ce843-c18e-4903-b44c-da6f84597212', 'SYSTEM', CURRENT_TIMESTAMP, NULL, NULL, false, 'dev2025', 'p@ssw0rd', '123');
+      rollback:
+        - sql:
+            dbms: h2
+            sql: DELETE FROM TBL_USER WHERE ID='3b3ce843-c18e-4903-b44c-da6f84597212';
