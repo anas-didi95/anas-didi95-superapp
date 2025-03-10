@@ -7,6 +7,7 @@ import com.anasdidi.superapp.common.CommonUtils;
 import com.anasdidi.superapp.error.BaseError;
 import com.anasdidi.superapp.error.E000InternalServerError;
 import com.anasdidi.superapp.error.E001ResourceNotFoundError;
+import com.anasdidi.superapp.error.E002ValidationError;
 import com.anasdidi.superapp.verticle.auth.AuthVerticle;
 import com.anasdidi.superapp.verticle.helloworld.HelloWorldVerticle;
 import com.anasdidi.superapp.verticle.tracelog.TraceLogVerticle;
@@ -32,6 +33,7 @@ import io.vertx.ext.web.openapi.router.RequestExtractor;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContract;
+import io.vertx.openapi.validation.SchemaValidationException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -85,16 +87,20 @@ public class MainVerticle extends AbstractVerticle {
               mainRouter.errorHandler(
                   500,
                   ctx -> {
-                    logger.error("{} ERROR...", getTag(ctx, 500), ctx.failure());
+                    if (ctx.failure() instanceof SchemaValidationException e) {
+                      ctx.fail(400, new E002ValidationError(e));
+                    } else {
+                      logger.error("{} ERROR...", getTag(ctx, 500), ctx.failure());
 
-                    E000InternalServerError e =
-                        ctx.failure() instanceof E000InternalServerError
-                            ? (E000InternalServerError) ctx.failure()
-                            : new E000InternalServerError(ctx.failure().getMessage());
-                    ctx.response()
-                        .setStatusCode(500)
-                        .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                        .end(e.getResponseBody(ctx).encode());
+                      E000InternalServerError e =
+                          ctx.failure() instanceof E000InternalServerError
+                              ? (E000InternalServerError) ctx.failure()
+                              : new E000InternalServerError(ctx.failure().getMessage());
+                      ctx.response()
+                          .setStatusCode(500)
+                          .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                          .end(e.getResponseBody(ctx).encode());
+                    }
                   });
               mainRouter.errorHandler(
                   404,

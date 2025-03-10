@@ -12,6 +12,7 @@ public abstract class BaseError extends RuntimeException {
   private final String errorMessage;
 
   BaseError(String errorCode, String errorMessage) {
+    super(errorMessage);
     this.errorCode = errorCode;
     this.errorMessage = errorMessage;
   }
