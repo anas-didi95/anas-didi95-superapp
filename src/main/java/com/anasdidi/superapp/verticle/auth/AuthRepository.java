@@ -2,6 +2,8 @@
 package com.anasdidi.superapp.verticle.auth;
 
 import com.anasdidi.superapp.common.BaseRepository;
+import com.anasdidi.superapp.error.E003RecordNotFoundError;
+import com.anasdidi.superapp.error.E003RecordNotFoundError.E003RecordEnum;
 import com.anasdidi.superapp.verticle.auth.entity.UserEntity;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
@@ -38,7 +40,7 @@ public class AuthRepository extends BaseRepository {
               if (o.size() > 0) {
                 return o.iterator().next();
               }
-              throw new RuntimeException("Record Not Found!");
+              throw new E003RecordNotFoundError(E003RecordEnum.UserEntity);
             });
   }
 }

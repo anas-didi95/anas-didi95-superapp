@@ -2,6 +2,7 @@
 package com.anasdidi.superapp.verticle.auth.service.impl;
 
 import com.anasdidi.superapp.AppConfig;
+import com.anasdidi.superapp.error.E004InvalidUsernamePasswordError;
 import com.anasdidi.superapp.verticle.auth.AuthRepository;
 import com.anasdidi.superapp.verticle.auth.dto.AuthLoginReqDto;
 import com.anasdidi.superapp.verticle.auth.dto.AuthLoginResDto;
@@ -40,7 +41,7 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
             .andThen(
                 o -> {
                   if (o.failed() || !o.result().getPassword().equals(dto.body().password())) {
-                    throw new RuntimeException("Invalid username/password!");
+                    throw new E004InvalidUsernamePasswordError();
                   }
                 });
 
