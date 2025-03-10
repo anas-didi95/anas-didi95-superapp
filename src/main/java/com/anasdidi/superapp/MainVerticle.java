@@ -26,6 +26,7 @@ import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.openapi.router.RequestExtractor;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
@@ -84,6 +85,8 @@ public class MainVerticle extends AbstractVerticle {
               mainRouter.errorHandler(
                   500,
                   ctx -> {
+                    logger.error("{} ERROR...", getTag(ctx, 500), ctx.failure());
+
                     E000InternalServerError e =
                         ctx.failure() instanceof E000InternalServerError
                             ? (E000InternalServerError) ctx.failure()
@@ -96,6 +99,8 @@ public class MainVerticle extends AbstractVerticle {
               mainRouter.errorHandler(
                   404,
                   ctx -> {
+                    logger.warn("{} ERROR...", getTag(ctx, 404), ctx.failure());
+
                     E001ResourceNotFoundError e = new E001ResourceNotFoundError();
                     ctx.response()
                         .setStatusCode(404)
@@ -105,6 +110,8 @@ public class MainVerticle extends AbstractVerticle {
               mainRouter.errorHandler(
                   400,
                   ctx -> {
+                    logger.debug("{} ERROR...", getTag(ctx, 400), ctx.failure());
+
                     if (ctx.failure() instanceof BaseError ee) {
                       ctx.response()
                           .setStatusCode(400)
@@ -240,5 +247,10 @@ public class MainVerticle extends AbstractVerticle {
                 })
             .toList();
     return Future.all(deployList);
+  }
+
+  private String getTag(RoutingContext ctx, int statusCode) {
+    String traceId = CommonUtils.getTraceId(ctx);
+    return CommonUtils.getTag(traceId, this.getClass(), "StsCd[%d]".formatted(statusCode));
   }
 }

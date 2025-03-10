@@ -56,4 +56,8 @@ public final class CommonUtils {
   public static final String getTraceId(RoutingContext ctx) {
     return ctx.get(CommonConstants.CTX_TRACEID);
   }
+
+  public static final String getTag(String traceId, Class<?> clazz, String operationId) {
+    return "#%s#%s#%s#".formatted(traceId, clazz.getSimpleName(), operationId);
+  }
 }

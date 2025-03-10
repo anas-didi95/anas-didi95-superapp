@@ -139,7 +139,7 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
   }
 
   private String getTag(String traceId) {
-    return "#%s#%s#%s#".formatted(traceId, this.getClass().getSimpleName(), getOperationId());
+    return CommonUtils.getTag(traceId, this.getClass(), getOperationId());
   }
 
   public final void setVertx(Vertx vertx) {
