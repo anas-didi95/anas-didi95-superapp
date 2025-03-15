@@ -17,6 +17,7 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.Transaction;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -36,6 +37,7 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
       User user, InboundDto<AuthLoginReqDto> dto, Map<String, Object> opts) {
     AuthRepository repo = getRepository();
     Future<SqlConnection> conn = repo.getConnection();
+    Future<Transaction> tran = conn.compose(o -> o.begin());
     Future<UserEntity> entity =
         conn.compose(o -> repo.getUserByUsername(o, dto.body().username()))
             .andThen(
@@ -44,10 +46,13 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
                     throw new E04InvalidUsernamePasswordError();
                   }
                 });
+    Future<Void> session =
+        Future.all(conn, tran, entity)
+            .compose(o -> repo.upsertUserSession(conn.result(), entity.result().getId()));
 
     return Future.future(
         promise -> {
-          Future.all(conn, entity)
+          Future.all(conn, tran, entity, session)
               .onComplete(
                   o -> {
                     JWTAuth jwt = AppConfig.INSTANCE.getJwtAuth();
@@ -58,10 +63,13 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
                             new JWTOptions(AppConfig.INSTANCE.getJwtOptions())
                                 .setSubject(entity.result().getId().toString())
                                 .setAudience(Arrays.asList("DEV")));
+                    tran.compose(oo -> oo.commit()).eventually(() -> conn.result().close());
                     promise.complete(new OutboundDto<>(new AuthLoginResDto(accessToken), false));
                   },
-                  e -> promise.fail(e))
-              .eventually(() -> conn.compose(o -> o.close()));
+                  e -> {
+                    tran.compose(oo -> oo.rollback()).eventually(() -> conn.result().close());
+                    promise.fail(e);
+                  });
         });
   }
 
