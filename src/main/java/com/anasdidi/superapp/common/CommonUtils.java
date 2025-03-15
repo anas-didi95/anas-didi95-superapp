@@ -10,6 +10,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -81,7 +82,8 @@ public final class CommonUtils {
     JsonObject oo = o.copy();
     for (String k : oo.fieldNames()) {
       if (k.toLowerCase().contains("pass")) {
-        oo.put(k, "*****");
+        Object v = oo.getValue(k);
+        oo.put(k, Objects.nonNull(v) ? "*****" : null);
       }
     }
     return oo;

@@ -91,7 +91,7 @@ public abstract class BaseService<
                   Optional.ofNullable(opts.get("trace"))
                       .map(String::valueOf)
                       .map(Boolean::parseBoolean)
-                      .orElse(false);
+                      .orElse(true);
               if (trace && o.succeeded()) {
                 CommonUtils.prepareEBRequest(
                     vertx.eventBus(),
