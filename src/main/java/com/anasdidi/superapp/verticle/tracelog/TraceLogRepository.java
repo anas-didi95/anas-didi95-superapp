@@ -2,6 +2,7 @@
 package com.anasdidi.superapp.verticle.tracelog;
 
 import com.anasdidi.superapp.common.BaseRepository;
+import com.anasdidi.superapp.common.CommonUtils;
 import com.anasdidi.superapp.verticle.tracelog.dto.TraceLogSaveLogReqDto;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
@@ -25,9 +26,9 @@ public class TraceLogRepository extends BaseRepository {
             .put("createDate", OffsetDateTime.now())
             .put("traceId", dto.traceId())
             .put("origin", dto.origin())
-            .put("in", dto.in().encode())
+            .put("in", CommonUtils.log(dto.in()).encode())
             .put("opts", Optional.ofNullable(dto.opts()).orElse(JsonObject.of()).encode())
-            .put("out", dto.out().encode())
+            .put("out", CommonUtils.log(dto.out()).encode())
             .put("isError", Optional.ofNullable(dto.isError()).orElse(true));
 
     return SqlTemplate.forUpdate(conn, sql)

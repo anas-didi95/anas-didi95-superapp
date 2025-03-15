@@ -64,7 +64,7 @@ public abstract class BaseService<
     JsonObject query = prepareQuery(validatedRequest.getQuery());
 
     InboundDto<A> in = new InboundDto<>(body, path, query);
-    logger.info("{} IN :: {}", getTag(traceId), in);
+    logger.info("{} IN :: {}", getTag(traceId), CommonUtils.log(in));
 
     Future<OutboundDto<B>> out =
         handle(ctx.user(), in, opts, traceId)
@@ -85,8 +85,8 @@ public abstract class BaseService<
                         traceId,
                         null,
                         JsonObject.of()
-                            .put(CommonConstants.DTO_IN, JsonObject.mapFrom(in))
-                            .put(CommonConstants.DTO_OUT, JsonObject.mapFrom(o.result()))
+                            .put(CommonConstants.DTO_IN, CommonUtils.log(in))
+                            .put(CommonConstants.DTO_OUT, CommonUtils.log(o.result()))
                             .put(CommonConstants.DTO_OPTS, opts)
                             .put(CommonConstants.DTO_ISERROR, false));
                   } else if (trace && o.failed()) {
@@ -105,7 +105,7 @@ public abstract class BaseService<
                         traceId,
                         null,
                         JsonObject.of()
-                            .put(CommonConstants.DTO_IN, JsonObject.mapFrom(in))
+                            .put(CommonConstants.DTO_IN, CommonUtils.log(in))
                             .put(CommonConstants.DTO_OUT, err)
                             .put(CommonConstants.DTO_OPTS, opts)
                             .put(CommonConstants.DTO_ISERROR, true));
@@ -114,7 +114,7 @@ public abstract class BaseService<
 
     out.onComplete(
             o -> {
-              logger.info("{} OUT :: {}", getTag(traceId), o);
+              logger.info("{} OUT :: {}", getTag(traceId), CommonUtils.log(o));
               ctx.response().end(JsonObject.mapFrom(o.result()).encode());
             },
             e -> {
@@ -147,13 +147,13 @@ public abstract class BaseService<
 
     A message = parseMessage((JsonObject) msg.body(), msg.headers());
     InboundDto<A> in = new InboundDto<>(message, null, null);
-    logger.info("{} IN :: {}", getTag(traceId), in);
+    logger.info("{} IN :: {}", getTag(traceId), CommonUtils.log(in));
 
     Future<OutboundDto<B>> out = handle(user, in, opts, traceId);
 
     out.onComplete(
             o -> {
-              logger.info("{} OUT :: {}", getTag(traceId), o.result());
+              logger.info("{} OUT :: {}", getTag(traceId), CommonUtils.log(o));
               msg.reply(JsonObject.mapFrom(o));
             },
             e -> {

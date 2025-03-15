@@ -1,6 +1,8 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
 package com.anasdidi.superapp.common;
 
+import com.anasdidi.superapp.common.BaseService.InboundDto;
+import com.anasdidi.superapp.common.BaseService.OutboundDto;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
@@ -59,5 +61,29 @@ public final class CommonUtils {
 
   public static final String getTag(String traceId, Class<?> clazz, String operationId) {
     return "#%s#%s#%s#".formatted(traceId, clazz.getSimpleName(), operationId);
+  }
+
+  public static final JsonObject log(InboundDto<?> o) {
+    JsonObject body =
+        log(Optional.ofNullable(o.body()).map(JsonObject::mapFrom).orElse(JsonObject.of()));
+    JsonObject path = log(Optional.ofNullable(o.path()).orElse(JsonObject.of()));
+    JsonObject query = log(Optional.ofNullable(o.query()).orElse(JsonObject.of()));
+    return JsonObject.of().put("body", body).put("path", path).put("query", query);
+  }
+
+  public static final JsonObject log(OutboundDto<?> o) {
+    JsonObject result =
+        log(Optional.ofNullable(o.result()).map(JsonObject::mapFrom).orElse(JsonObject.of()));
+    return JsonObject.of().put("result", result);
+  }
+
+  public static final JsonObject log(JsonObject o) {
+    JsonObject oo = o.copy();
+    for (String k : oo.fieldNames()) {
+      if (k.toLowerCase().contains("pass")) {
+        oo.put(k, "*****");
+      }
+    }
+    return oo;
   }
 }
