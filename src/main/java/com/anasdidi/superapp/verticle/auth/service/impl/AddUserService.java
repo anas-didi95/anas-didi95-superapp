@@ -42,7 +42,6 @@ public class AddUserService extends AuthService<AuthAddUserReqDto, AuthAddUserRe
         Future.future(
             promise -> {
               String fullPassword = AuthUtils.preparePassword(dto.body().password(), salt);
-              System.out.println("fullPassword=" + fullPassword);
               promise.complete(AppConfig.INSTANCE.getPasswordEncoder().encode(fullPassword));
             });
     Future<SqlConnection> conn = repo.getConnection();
@@ -59,8 +58,8 @@ public class AddUserService extends AuthService<AuthAddUserReqDto, AuthAddUserRe
           Future.all(hashPassword, conn, tran, insert)
               .onComplete(
                   o -> {
-                    promise.complete(new OutboundDto<>(new AuthAddUserResDto(traceId), false));
                     tran.compose(oo -> oo.commit()).eventually(() -> conn.result().close());
+                    promise.complete(new OutboundDto<>(new AuthAddUserResDto(traceId)));
                   },
                   e -> {
                     tran.compose(oo -> oo.rollback()).eventually(() -> conn.result().close());

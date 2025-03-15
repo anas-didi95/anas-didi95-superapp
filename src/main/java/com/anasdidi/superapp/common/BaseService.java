@@ -66,7 +66,51 @@ public abstract class BaseService<
     InboundDto<A> in = new InboundDto<>(body, path, query);
     logger.info("{} IN :: {}", getTag(traceId), in);
 
-    Future<OutboundDto<B>> out = handle(ctx.user(), in, opts, traceId);
+    Future<OutboundDto<B>> out =
+        handle(ctx.user(), in, opts, traceId)
+            .andThen(
+                o -> {
+                  boolean trace =
+                      Optional.ofNullable(opts.get("trace"))
+                          .map(String::valueOf)
+                          .map(Boolean::parseBoolean)
+                          .orElse(false);
+                  System.out.println("trace=" + trace);
+                  if (trace && o.succeeded()) {
+                    CommonUtils.prepareEBRequest(
+                        vertx.eventBus(),
+                        TraceLogVerticle.class,
+                        "SAVE_LOG",
+                        "%s:%s".formatted(this.getClass().getSimpleName(), getOperationId()),
+                        traceId,
+                        null,
+                        JsonObject.of()
+                            .put(CommonConstants.DTO_IN, JsonObject.mapFrom(in))
+                            .put(CommonConstants.DTO_OUT, JsonObject.mapFrom(o.result()))
+                            .put(CommonConstants.DTO_OPTS, opts)
+                            .put(CommonConstants.DTO_ISERROR, false));
+                  } else if (trace && o.failed()) {
+                    JsonObject err;
+                    if (o.cause() instanceof BaseError e) {
+                      err = e.getResponseBody(ctx);
+                    } else {
+                      err = new E00InternalServerError(o.cause().getMessage()).getResponseBody(ctx);
+                    }
+
+                    CommonUtils.prepareEBRequest(
+                        vertx.eventBus(),
+                        TraceLogVerticle.class,
+                        "SAVE_LOG",
+                        "%s:%s".formatted(this.getClass().getSimpleName(), getOperationId()),
+                        traceId,
+                        null,
+                        JsonObject.of()
+                            .put(CommonConstants.DTO_IN, JsonObject.mapFrom(in))
+                            .put(CommonConstants.DTO_OUT, err)
+                            .put(CommonConstants.DTO_OPTS, opts)
+                            .put(CommonConstants.DTO_ISERROR, true));
+                  }
+                });
 
     out.onComplete(
             o -> {
@@ -74,7 +118,7 @@ public abstract class BaseService<
               ctx.response().end(JsonObject.mapFrom(o.result()).encode());
             },
             e -> {
-              logger.error("{} ERR :: {}", getTag(traceId), e.getMessage());
+              logger.debug("{} ERR :: {}", getTag(traceId), e.getMessage());
               if (e instanceof E00InternalServerError ee) {
                 ctx.fail(500, ee);
               } else if (e instanceof BaseError ee) {
@@ -86,25 +130,7 @@ public abstract class BaseService<
         .eventually(
             () -> {
               logger.info("{} END...{}ms", getTag(traceId), System.currentTimeMillis() - timeStart);
-              boolean trace =
-                  Optional.ofNullable(opts.get("trace"))
-                      .map(String::valueOf)
-                      .map(Boolean::parseBoolean)
-                      .orElse(false);
-              return trace
-                  ? CommonUtils.prepareEBRequest(
-                      vertx.eventBus(),
-                      TraceLogVerticle.class,
-                      "SAVE_LOG",
-                      "%s:%s".formatted(this.getClass().getSimpleName(), getOperationId()),
-                      traceId,
-                      null,
-                      JsonObject.of()
-                          .put(CommonConstants.DTO_IN, JsonObject.mapFrom(in))
-                          .put(CommonConstants.DTO_OUT, JsonObject.mapFrom(out.result()))
-                          .put(CommonConstants.DTO_OPTS, opts)
-                          .put(CommonConstants.DTO_ISERROR, out.result().isError()))
-                  : Future.succeededFuture();
+              return Future.succeededFuture();
             });
   }
 
@@ -131,7 +157,7 @@ public abstract class BaseService<
               msg.reply(JsonObject.mapFrom(o));
             },
             e -> {
-              logger.error("{} ERR :: {}", getTag(traceId), e.getMessage());
+              logger.debug("{} ERR :: {}", getTag(traceId), e.getMessage());
               msg.reply(e);
             })
         .eventually(
@@ -163,5 +189,5 @@ public abstract class BaseService<
 
   public static record InboundDto<A>(A body, JsonObject path, JsonObject query) {}
 
-  public static record OutboundDto<B>(B result, Boolean isError) {}
+  public static record OutboundDto<B>(B result) {}
 }

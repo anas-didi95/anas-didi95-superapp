@@ -51,3 +51,5 @@ app:
           eventType: CHECK_JWT
         addUser:
           enabled: true
+          opts:
+            trace: true

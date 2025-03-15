@@ -74,7 +74,7 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
                                 .setSubject(entity.result().getUsername())
                                 .setAudience(Arrays.asList("DEV")));
                     tran.compose(oo -> oo.commit()).eventually(() -> conn.result().close());
-                    promise.complete(new OutboundDto<>(new AuthLoginResDto(accessToken), false));
+                    promise.complete(new OutboundDto<>(new AuthLoginResDto(accessToken)));
                   },
                   e -> {
                     tran.compose(oo -> oo.rollback()).eventually(() -> conn.result().close());

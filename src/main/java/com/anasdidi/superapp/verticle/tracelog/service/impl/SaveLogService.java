@@ -41,7 +41,7 @@ public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, Trace
               .onComplete(
                   o -> {
                     tran.result().commit().eventually(() -> conn.result().close());
-                    promise.complete(new OutboundDto<>(new TraceLogSaveLogResDto(), false));
+                    promise.complete(new OutboundDto<>(new TraceLogSaveLogResDto()));
                   },
                   e -> {
                     tran.result().rollback().eventually(() -> conn.result().close());

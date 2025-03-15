@@ -27,7 +27,7 @@ public class GreetService extends HelloWorldService<HelloWorldGreetReqDto, Hello
           case "mly" -> "Selamat datang.";
           default -> "Welcome.";
         };
-    return Future.succeededFuture(new OutboundDto<>(new HelloWorldGreetResDto(lang, value), false));
+    return Future.succeededFuture(new OutboundDto<>(new HelloWorldGreetResDto(lang, value)));
   }
 
   @Override

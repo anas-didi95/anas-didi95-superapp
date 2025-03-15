@@ -295,6 +295,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
                 update.addArgumentValue(argUsername, db.getString(argUsername));
                 update.addArgumentValue(argPassword, db.getString(argPassword));
                 update.addArgumentValue(UpdateCommandStep.LABEL_FILTER_ARG, labels);
+                update.addArgumentValue(UpdateCommandStep.CONTEXTS_ARG, env);
                 update.execute();
               });
           logger.info(

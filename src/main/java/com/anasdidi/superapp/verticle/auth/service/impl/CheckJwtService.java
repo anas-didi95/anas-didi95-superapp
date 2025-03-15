@@ -58,8 +58,7 @@ public class CheckJwtService extends AuthService<AuthCheckJwtReqDto, AuthCheckJw
                       promise.complete(
                           new OutboundDto<>(
                               new AuthCheckJwtResDto(
-                                  authUser.username(), session.result().getValidAfterDate()),
-                              false)),
+                                  authUser.username(), session.result().getValidAfterDate()))),
                   e -> promise.fail(e));
         });
   }
