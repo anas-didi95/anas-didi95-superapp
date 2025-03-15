@@ -193,7 +193,7 @@ public class MainVerticle extends AbstractVerticle {
           JsonObject security =
               config.getJsonObject(CommonConstants.CFG_APP).getJsonObject("security");
           AppConfig.INSTANCE.setJwtOptions(
-              new JWTOptions()
+              new JWTOptions(JsonObject.of().put("permissionsClaimKey", "permissions"))
                   .setIssuer(security.getString("issuer"))
                   .setExpiresInSeconds(security.getInteger("expiresInSeconds"))
                   .setAudience(Arrays.asList(security.getString("audience").split(","))));

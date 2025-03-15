@@ -66,7 +66,10 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
                     JWTAuth jwt = AppConfig.INSTANCE.getJwtAuth();
                     AuthUser userData =
                         new AuthUser(
-                            entity.result().getId(), entity.result().getUsername(), Instant.now());
+                            entity.result().getId(),
+                            entity.result().getUsername(),
+                            Instant.now(),
+                            Arrays.asList("*"));
                     String accessToken =
                         jwt.generateToken(
                             JsonObject.mapFrom(userData),

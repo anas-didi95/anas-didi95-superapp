@@ -3,6 +3,7 @@ package com.anasdidi.superapp.common;
 
 import com.anasdidi.superapp.error.BaseError;
 import com.anasdidi.superapp.error.E00InternalServerError;
+import com.anasdidi.superapp.error.E06UnauthorizedError;
 import com.anasdidi.superapp.verticle.tracelog.TraceLogVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
@@ -10,11 +11,13 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.auth.authorization.PermissionBasedAuthorization;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.openapi.router.RouterBuilder;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.openapi.validation.ValidatedRequest;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,51 +69,64 @@ public abstract class BaseService<
     InboundDto<A> in = new InboundDto<>(body, path, query);
     logger.info("{} IN :: {}", getTag(traceId), CommonUtils.log(in));
 
-    Future<OutboundDto<B>> out =
-        handle(ctx.user(), in, opts, traceId)
-            .andThen(
-                o -> {
-                  boolean trace =
-                      Optional.ofNullable(opts.get("trace"))
-                          .map(String::valueOf)
-                          .map(Boolean::parseBoolean)
-                          .orElse(false);
-                  System.out.println("trace=" + trace);
-                  if (trace && o.succeeded()) {
-                    CommonUtils.prepareEBRequest(
-                        vertx.eventBus(),
-                        TraceLogVerticle.class,
-                        "SAVE_LOG",
-                        "%s:%s".formatted(this.getClass().getSimpleName(), getOperationId()),
-                        traceId,
-                        null,
-                        JsonObject.of()
-                            .put(CommonConstants.DTO_IN, CommonUtils.log(in))
-                            .put(CommonConstants.DTO_OUT, CommonUtils.log(o.result()))
-                            .put(CommonConstants.DTO_OPTS, opts)
-                            .put(CommonConstants.DTO_ISERROR, false));
-                  } else if (trace && o.failed()) {
-                    JsonObject err;
-                    if (o.cause() instanceof BaseError e) {
-                      err = e.getResponseBody(ctx);
-                    } else {
-                      err = new E00InternalServerError(o.cause().getMessage()).getResponseBody(ctx);
-                    }
+    User user = ctx.user();
+    Future<Void> permission =
+        Future.future(
+            promise -> {
+              if (Objects.nonNull(user)) {
+                boolean isAuthorized =
+                    PermissionBasedAuthorization.create("*").match(user)
+                        || PermissionBasedAuthorization.create(getOperationId()).match(user);
+                if (!isAuthorized) {
+                  promise.fail(new E06UnauthorizedError());
+                }
+              }
+              promise.complete();
+            });
+    Future<OutboundDto<B>> out = permission.compose(o -> handle(user, in, opts, traceId));
+    Future.all(permission, out)
+        .andThen(
+            o -> {
+              boolean trace =
+                  Optional.ofNullable(opts.get("trace"))
+                      .map(String::valueOf)
+                      .map(Boolean::parseBoolean)
+                      .orElse(false);
+              if (trace && o.succeeded()) {
+                CommonUtils.prepareEBRequest(
+                    vertx.eventBus(),
+                    TraceLogVerticle.class,
+                    "SAVE_LOG",
+                    "%s:%s".formatted(this.getClass().getSimpleName(), getOperationId()),
+                    traceId,
+                    null,
+                    JsonObject.of()
+                        .put(CommonConstants.DTO_IN, CommonUtils.log(in))
+                        .put(CommonConstants.DTO_OUT, CommonUtils.log(out.result()))
+                        .put(CommonConstants.DTO_OPTS, opts)
+                        .put(CommonConstants.DTO_ISERROR, false));
+              } else if (trace && o.failed()) {
+                JsonObject err;
+                if (o.cause() instanceof BaseError e) {
+                  err = e.getResponseBody(ctx);
+                } else {
+                  err = new E00InternalServerError(o.cause().getMessage()).getResponseBody(ctx);
+                }
 
-                    CommonUtils.prepareEBRequest(
-                        vertx.eventBus(),
-                        TraceLogVerticle.class,
-                        "SAVE_LOG",
-                        "%s:%s".formatted(this.getClass().getSimpleName(), getOperationId()),
-                        traceId,
-                        null,
-                        JsonObject.of()
-                            .put(CommonConstants.DTO_IN, CommonUtils.log(in))
-                            .put(CommonConstants.DTO_OUT, err)
-                            .put(CommonConstants.DTO_OPTS, opts)
-                            .put(CommonConstants.DTO_ISERROR, true));
-                  }
-                });
+                CommonUtils.prepareEBRequest(
+                    vertx.eventBus(),
+                    TraceLogVerticle.class,
+                    "SAVE_LOG",
+                    "%s:%s".formatted(this.getClass().getSimpleName(), getOperationId()),
+                    traceId,
+                    null,
+                    JsonObject.of()
+                        .put(CommonConstants.DTO_IN, CommonUtils.log(in))
+                        .put(CommonConstants.DTO_OUT, err)
+                        .put(CommonConstants.DTO_OPTS, opts)
+                        .put(CommonConstants.DTO_ISERROR, true));
+              }
+            });
 
     out.onComplete(
             o -> {
