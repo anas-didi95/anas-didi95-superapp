@@ -11,6 +11,7 @@ import com.anasdidi.superapp.error.E02ValidationError;
 import com.anasdidi.superapp.verticle.auth.AuthVerticle;
 import com.anasdidi.superapp.verticle.helloworld.HelloWorldVerticle;
 import com.anasdidi.superapp.verticle.tracelog.TraceLogVerticle;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -49,6 +50,7 @@ public class MainVerticle extends AbstractVerticle {
   static {
     System.setProperty("io.vertx.web.router.setup.lenient", "true");
     DatabindCodec.mapper().findAndRegisterModules();
+    DatabindCodec.mapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 
   @Override

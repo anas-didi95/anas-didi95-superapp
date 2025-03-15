@@ -12,6 +12,7 @@ public class E03RecordNotFoundError extends BaseError {
   }
 
   public enum E003RecordEnum {
-    UserEntity
+    UserEntity,
+    UserSessionEntity
   }
 }

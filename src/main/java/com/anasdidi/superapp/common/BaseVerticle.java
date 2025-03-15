@@ -143,7 +143,15 @@ public abstract class BaseVerticle extends AbstractVerticle {
                                       CommonConstants.EB_HEADER_PRINCIPAL,
                                       ctx.user().principal().encode()),
                                   null)
-                              .onComplete(o -> ctx.next(), e -> ctx.fail(e)));
+                              .onComplete(
+                                  o -> {
+                                    if (o.body() instanceof Throwable e) {
+                                      ctx.fail(400, e);
+                                    } else {
+                                      ctx.next();
+                                    }
+                                  },
+                                  e -> ctx.fail(e)));
               logger.info(
                   "[{}:processRouter] Register security {}...{}",
                   this.getClass().getSimpleName(),

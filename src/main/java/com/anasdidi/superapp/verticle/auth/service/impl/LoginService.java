@@ -18,6 +18,7 @@ import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -56,12 +57,14 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
               .onComplete(
                   o -> {
                     JWTAuth jwt = AppConfig.INSTANCE.getJwtAuth();
-                    AuthUser userData = new AuthUser(entity.result().getUsername());
+                    AuthUser userData =
+                        new AuthUser(
+                            entity.result().getId(), entity.result().getUsername(), Instant.now());
                     String accessToken =
                         jwt.generateToken(
                             JsonObject.mapFrom(userData),
                             new JWTOptions(AppConfig.INSTANCE.getJwtOptions())
-                                .setSubject(entity.result().getId().toString())
+                                .setSubject(entity.result().getUsername())
                                 .setAudience(Arrays.asList("DEV")));
                     tran.compose(oo -> oo.commit()).eventually(() -> conn.result().close());
                     promise.complete(new OutboundDto<>(new AuthLoginResDto(accessToken), false));
