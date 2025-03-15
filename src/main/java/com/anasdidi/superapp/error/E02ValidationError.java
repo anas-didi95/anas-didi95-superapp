@@ -3,13 +3,13 @@ package com.anasdidi.superapp.error;
 
 import io.vertx.openapi.validation.SchemaValidationException;
 
-public class E002ValidationError extends BaseError {
+public class E02ValidationError extends BaseError {
 
-  public E002ValidationError(SchemaValidationException e) {
-    this("E002", e.getMessage());
+  public E02ValidationError(SchemaValidationException e) {
+    this("E02", e.getMessage());
   }
 
-  E002ValidationError(String errorCode, String errorMessage) {
+  E02ValidationError(String errorCode, String errorMessage) {
     super(errorCode, errorMessage);
   }
 }

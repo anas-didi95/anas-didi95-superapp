@@ -5,9 +5,9 @@ import com.anasdidi.superapp.common.BaseVerticle;
 import com.anasdidi.superapp.common.CommonConstants;
 import com.anasdidi.superapp.common.CommonUtils;
 import com.anasdidi.superapp.error.BaseError;
-import com.anasdidi.superapp.error.E000InternalServerError;
-import com.anasdidi.superapp.error.E001ResourceNotFoundError;
-import com.anasdidi.superapp.error.E002ValidationError;
+import com.anasdidi.superapp.error.E00InternalServerError;
+import com.anasdidi.superapp.error.E01ResourceNotFoundError;
+import com.anasdidi.superapp.error.E02ValidationError;
 import com.anasdidi.superapp.verticle.auth.AuthVerticle;
 import com.anasdidi.superapp.verticle.helloworld.HelloWorldVerticle;
 import com.anasdidi.superapp.verticle.tracelog.TraceLogVerticle;
@@ -88,14 +88,14 @@ public class MainVerticle extends AbstractVerticle {
                   500,
                   ctx -> {
                     if (ctx.failure() instanceof SchemaValidationException e) {
-                      ctx.fail(400, new E002ValidationError(e));
+                      ctx.fail(400, new E02ValidationError(e));
                     } else {
                       logger.error("{} ERROR...", getTag(ctx, 500), ctx.failure());
 
-                      E000InternalServerError e =
-                          ctx.failure() instanceof E000InternalServerError
-                              ? (E000InternalServerError) ctx.failure()
-                              : new E000InternalServerError(ctx.failure().getMessage());
+                      E00InternalServerError e =
+                          ctx.failure() instanceof E00InternalServerError
+                              ? (E00InternalServerError) ctx.failure()
+                              : new E00InternalServerError(ctx.failure().getMessage());
                       ctx.response()
                           .setStatusCode(500)
                           .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
@@ -107,7 +107,7 @@ public class MainVerticle extends AbstractVerticle {
                   ctx -> {
                     logger.warn("{} ERROR...", getTag(ctx, 404), ctx.failure());
 
-                    E001ResourceNotFoundError e = new E001ResourceNotFoundError();
+                    E01ResourceNotFoundError e = new E01ResourceNotFoundError();
                     ctx.response()
                         .setStatusCode(404)
                         .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
