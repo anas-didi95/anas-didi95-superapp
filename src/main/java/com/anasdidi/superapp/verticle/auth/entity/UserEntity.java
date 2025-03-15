@@ -8,6 +8,7 @@ public class UserEntity {
   private UUID id;
   private String username;
   private String password;
+  private String salt;
 
   public UUID getId() {
     return id;
@@ -31,5 +32,13 @@ public class UserEntity {
 
   public void setPassword(String password) {
     this.password = password;
+  }
+
+  public String getSalt() {
+    return salt;
+  }
+
+  public void setSalt(String salt) {
+    this.salt = salt;
   }
 }

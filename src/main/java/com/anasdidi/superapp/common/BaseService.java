@@ -36,7 +36,7 @@ public abstract class BaseService<
   public abstract String getOperationId();
 
   protected abstract Future<OutboundDto<B>> handle(
-      User user, InboundDto<A> dto, Map<String, Object> opts);
+      User user, InboundDto<A> dto, Map<String, Object> opts, String traceId);
 
   protected abstract A parseMessage(JsonObject body, MultiMap headers);
 
@@ -66,7 +66,7 @@ public abstract class BaseService<
     InboundDto<A> in = new InboundDto<>(body, path, query);
     logger.info("{} IN :: {}", getTag(traceId), in);
 
-    Future<OutboundDto<B>> out = handle(ctx.user(), in, opts);
+    Future<OutboundDto<B>> out = handle(ctx.user(), in, opts, traceId);
 
     out.onComplete(
             o -> {
@@ -123,7 +123,7 @@ public abstract class BaseService<
     InboundDto<A> in = new InboundDto<>(message, null, null);
     logger.info("{} IN :: {}", getTag(traceId), in);
 
-    Future<OutboundDto<B>> out = handle(user, in, opts);
+    Future<OutboundDto<B>> out = handle(user, in, opts, traceId);
 
     out.onComplete(
             o -> {

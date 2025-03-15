@@ -21,7 +21,7 @@ public class AuthRepository extends BaseRepository {
   public Future<UserEntity> getUserByUsername(SqlConnection conn, String username) {
     String sql =
         """
-        SELECT a.ID, a.USERNAME, a.PASSWORD
+        SELECT a.ID, a.USERNAME, a.PASSWORD, a.SALT
         FROM TBL_USER a
         WHERE a.USERNAME = #{username} AND NOT a.IS_DEL
         """;
@@ -32,6 +32,7 @@ public class AuthRepository extends BaseRepository {
           entity.setId(r.getUUID("ID"));
           entity.setUsername(r.getString("USERNAME"));
           entity.setPassword(r.getString("PASSWORD"));
+          entity.setSalt(r.getString("SALT"));
           return entity;
         };
 
@@ -113,5 +114,26 @@ public class AuthRepository extends BaseRepository {
                 Optional.ofNullable(o)
                     .map(oo -> updateUserSession(conn, oo.getId()))
                     .orElse(insertUserSession(conn, userId)));
+  }
+
+  public Future<Void> insertUser(
+      SqlConnection conn, String username, String hashPassword, String salt) {
+    String sql =
+        """
+        INSERT INTO TBL_USER (ID, CREATE_BY, CREATE_DT, IS_DEL, USERNAME, PASSWORD, SALT)
+        VALUES (#{id}, 'SYSTEM', #{createDate}, false, #{username}, #{hashPassword}, #{salt});
+        """;
+    JsonObject param =
+        JsonObject.of()
+            .put("id", UUID.randomUUID().toString())
+            .put("createDate", OffsetDateTime.now())
+            .put("username", username)
+            .put("hashPassword", hashPassword)
+            .put("salt", salt);
+
+    return SqlTemplate.forUpdate(conn, sql)
+        .mapFrom(TupleMapper.jsonObject())
+        .execute(param)
+        .compose(o -> Future.succeededFuture());
   }
 }

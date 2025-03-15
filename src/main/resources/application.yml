@@ -49,3 +49,5 @@ app:
         checkJwt:
           enabled: true
           eventType: CHECK_JWT
+        addUser:
+          enabled: true

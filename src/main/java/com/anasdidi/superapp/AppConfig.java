@@ -3,12 +3,14 @@ package com.anasdidi.superapp;
 
 import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 public final class AppConfig {
 
   public static final AppConfig INSTANCE = new AppConfig();
   private JWTOptions jwtOptions;
   private JWTAuth jwtAuth;
+  private PasswordEncoder passwordEncoder;
 
   private AppConfig() {}
 
@@ -26,5 +28,13 @@ public final class AppConfig {
 
   public JWTAuth getJwtAuth() {
     return this.jwtAuth;
+  }
+
+  public PasswordEncoder getPasswordEncoder() {
+    return passwordEncoder;
+  }
+
+  public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+    this.passwordEncoder = passwordEncoder;
   }
 }

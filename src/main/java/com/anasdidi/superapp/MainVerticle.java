@@ -42,6 +42,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -205,6 +206,7 @@ public class MainVerticle extends AbstractVerticle {
                           new PubSecKeyOptions()
                               .setAlgorithm("HS256")
                               .setBuffer(security.getString("secret")))));
+          AppConfig.INSTANCE.setPasswordEncoder(new BCryptPasswordEncoder());
           promise.complete();
         });
   }

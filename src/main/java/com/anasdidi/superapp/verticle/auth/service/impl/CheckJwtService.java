@@ -32,7 +32,7 @@ public class CheckJwtService extends AuthService<AuthCheckJwtReqDto, AuthCheckJw
 
   @Override
   protected Future<OutboundDto<AuthCheckJwtResDto>> handle(
-      User user, InboundDto<AuthCheckJwtReqDto> dto, Map<String, Object> opts) {
+      User user, InboundDto<AuthCheckJwtReqDto> dto, Map<String, Object> opts, String traceId) {
     AuthUser authUser = user.principal().mapTo(AuthUser.class);
     AuthRepository repo = getRepository();
     Future<SqlConnection> conn = repo.getConnection();

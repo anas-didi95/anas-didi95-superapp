@@ -23,6 +23,7 @@ val jacksonVersion = "2.18.2"
 val liquibaseVersion = "4.31.0"
 val h2Version = "2.1.210"
 val agroalVersion = "2.5"
+val springVersion = "6.4.3"
 
 val mainVerticleName = "com.anasdidi.superapp.MainVerticle"
 val launcherClassName = "io.vertx.core.Launcher"
@@ -51,6 +52,7 @@ dependencies {
   implementation("org.liquibase:liquibase-core:$liquibaseVersion")
   implementation("com.h2database:h2:$h2Version")
   implementation("io.agroal:agroal-pool:$agroalVersion")
+  implementation("org.springframework.security:spring-security-core:$springVersion")
 }
 
 java {

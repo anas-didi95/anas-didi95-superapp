@@ -28,7 +28,7 @@ public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, Trace
 
   @Override
   protected Future<OutboundDto<TraceLogSaveLogResDto>> handle(
-      User user, InboundDto<TraceLogSaveLogReqDto> dto, Map<String, Object> opts) {
+      User user, InboundDto<TraceLogSaveLogReqDto> dto, Map<String, Object> opts, String traceId) {
     TraceLogRepository repo = getRepository();
     return Future.future(
         promise -> {
