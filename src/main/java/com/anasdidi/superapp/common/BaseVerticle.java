@@ -38,11 +38,11 @@ public abstract class BaseVerticle extends AbstractVerticle {
 
   private static final Logger logger = LogManager.getLogger(BaseVerticle.class);
   private RouterBuilder routerBuilder;
-  private Map<String, BaseService<?, ?>> serviceMap;
+  private Map<String, BaseService<?, ?, ?>> serviceMap;
   private Map<String, Object> handlerMap;
   private BaseRepository repository;
 
-  protected abstract List<BaseService<?, ?>> prepareService();
+  protected abstract List<BaseService<?, ?, ?>> prepareService();
 
   protected abstract List<String> getLiquibaseLabel();
 
@@ -107,7 +107,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
               continue;
             }
 
-            Optional<BaseService<?, ?>> service = Optional.ofNullable(this.serviceMap.get(key));
+            Optional<BaseService<?, ?, ?>> service = Optional.ofNullable(this.serviceMap.get(key));
             if (service.isEmpty()) {
               logger.warn(
                   "[{}:processRouter] Service not found...{}",
@@ -196,7 +196,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
               continue;
             }
 
-            Optional<BaseService<?, ?>> service = Optional.ofNullable(this.serviceMap.get(key));
+            Optional<BaseService<?, ?, ?>> service = Optional.ofNullable(this.serviceMap.get(key));
             if (service.isEmpty()) {
               logger.warn(
                   "[{}:processEventBus] Service not found...{}",

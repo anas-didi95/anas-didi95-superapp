@@ -34,7 +34,7 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
   @Override
   protected Future<OutboundDto<AuthLoginResDto>> handle(
       User user, InboundDto<AuthLoginReqDto> dto, Map<String, Object> opts) {
-    AuthRepository repo = getRepository(AuthRepository.class);
+    AuthRepository repo = getRepository();
     Future<SqlConnection> conn = repo.getConnection();
     Future<UserEntity> entity =
         conn.compose(o -> repo.getUserByUsername(o, dto.body().username()))

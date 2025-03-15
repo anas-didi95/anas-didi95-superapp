@@ -19,15 +19,18 @@ import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
+public abstract class BaseService<
+    A extends BaseReqDto, B extends BaseResDto, C extends BaseRepository> {
 
   private static final Logger logger = LogManager.getLogger(BaseService.class);
   private final Class<A> bodyClass;
+  private final Class<C> repoClass;
   protected Vertx vertx;
   private BaseRepository repository;
 
-  public BaseService(Class<A> bodyClass) {
+  public BaseService(Class<A> bodyClass, Class<C> repoClass) {
     this.bodyClass = bodyClass;
+    this.repoClass = repoClass;
   }
 
   public abstract String getOperationId();
@@ -154,8 +157,8 @@ public abstract class BaseService<A extends BaseReqDto, B extends BaseResDto> {
     this.repository = repository;
   }
 
-  public final <C extends BaseRepository> C getRepository(Class<C> clazz) {
-    return clazz.cast(this.repository);
+  public final C getRepository() {
+    return Optional.ofNullable(repoClass).map(o -> o.cast(this.repository)).orElseThrow();
   }
 
   public static record InboundDto<A>(A body, JsonObject path, JsonObject query) {}

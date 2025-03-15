@@ -29,16 +29,13 @@ public class SaveLogService extends TraceLogService<TraceLogSaveLogReqDto, Trace
   @Override
   protected Future<OutboundDto<TraceLogSaveLogResDto>> handle(
       User user, InboundDto<TraceLogSaveLogReqDto> dto, Map<String, Object> opts) {
+    TraceLogRepository repo = getRepository();
     return Future.future(
         promise -> {
-          Future<SqlConnection> conn = this.getRepository(TraceLogRepository.class).getConnection();
+          Future<SqlConnection> conn = repo.getConnection();
           Future<Transaction> tran = conn.compose(o -> o.begin());
           Future<Void> insert =
-              Future.all(conn, tran)
-                  .compose(
-                      o ->
-                          this.getRepository(TraceLogRepository.class)
-                              .saveLog(conn.result(), dto.body()));
+              Future.all(conn, tran).compose(o -> repo.saveLog(conn.result(), dto.body()));
 
           Future.all(conn, tran, insert)
               .onComplete(

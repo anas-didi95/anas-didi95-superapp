@@ -2,13 +2,14 @@
 package com.anasdidi.superapp.verticle.tracelog.service;
 
 import com.anasdidi.superapp.common.BaseService;
+import com.anasdidi.superapp.verticle.tracelog.TraceLogRepository;
 import com.anasdidi.superapp.verticle.tracelog.dto.TraceLogBaseReqDto;
 import com.anasdidi.superapp.verticle.tracelog.dto.TraceLogBaseResDto;
 
 public abstract class TraceLogService<A extends TraceLogBaseReqDto, B extends TraceLogBaseResDto>
-    extends BaseService<A, B> {
+    extends BaseService<A, B, TraceLogRepository> {
 
   public TraceLogService(Class<A> bodyClass) {
-    super(bodyClass);
+    super(bodyClass, TraceLogRepository.class);
   }
 }
