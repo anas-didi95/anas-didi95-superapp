@@ -75,7 +75,7 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
                             JsonObject.mapFrom(userData),
                             new JWTOptions(AppConfig.INSTANCE.getJwtOptions())
                                 .setSubject(entity.result().getUsername())
-                                .setAudience(Arrays.asList("DEV")));
+                                .setAudience(Arrays.asList(entity.result().getChannelId())));
                     tran.compose(oo -> oo.commit()).eventually(() -> conn.result().close());
                     promise.complete(new OutboundDto<>(new AuthLoginResDto(accessToken)));
                   },

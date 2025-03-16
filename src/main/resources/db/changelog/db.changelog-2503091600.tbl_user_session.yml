@@ -29,7 +29,7 @@ databaseChangeLog:
             baseColumnNames: USER_ID
             referencedTableName: TBL_USER
             referencedColumnNames: ID
-            constraintName: FRK_USER_SESS#USER
+            constraintName: FRK_USER_SESSION#USER
 
         - createIndex:
             tableName: TBL_USER_SESSION

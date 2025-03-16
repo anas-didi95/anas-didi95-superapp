@@ -8,6 +8,8 @@ databaseChangeLog:
   - include:
       file: /db/changelog/db.changelog-2502112044.tbl_trace_log.yml
   - include:
+      file: /db/changelog/db.changelog-2502161059.tbl_channel.yml
+  - include:
       file: /db/changelog/db.changelog-2502161100.tbl_user.yml
   - include:
       file: /db/changelog/db.changelog-2503091600.tbl_user_session.yml

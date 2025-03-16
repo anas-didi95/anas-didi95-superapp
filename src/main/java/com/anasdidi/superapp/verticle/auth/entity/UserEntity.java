@@ -9,6 +9,7 @@ public class UserEntity {
   private String username;
   private String password;
   private String salt;
+  private String channelId;
 
   public UUID getId() {
     return id;
@@ -40,5 +41,13 @@ public class UserEntity {
 
   public void setSalt(String salt) {
     this.salt = salt;
+  }
+
+  public String getChannelId() {
+    return channelId;
+  }
+
+  public void setChannelId(String channelId) {
+    this.channelId = channelId;
   }
 }

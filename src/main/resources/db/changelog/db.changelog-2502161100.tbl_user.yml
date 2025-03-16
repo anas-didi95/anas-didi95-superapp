@@ -53,6 +53,18 @@ databaseChangeLog:
                   type: VARCHAR(50)
                   constraints:
                     nullable: false
+              - column:
+                  name: CHANNEL_ID
+                  type: VARCHAR(10)
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: TBL_USER
+            baseColumnNames: CHANNEL_ID
+            constraintName: FKR_USER#CHANNEL
+            referencedTableName: TBL_CHANNEL
+            referencedColumnNames: ID
 
         - createIndex:
             indexName: IDX_USER#USERNAME_IS_DEL
@@ -73,9 +85,8 @@ databaseChangeLog:
         - sql:
             dbms: h2
             sql: |
-              INSERT INTO TBL_USER (ID, CREATE_BY, CREATE_DT, UPDATE_BY, UPDATE_DT, IS_DEL, USERNAME, PASSWORD, SALT)
-              VALUES('86be8122-ebc0-4d4f-8050-2d2d7e523ccf', 'SYSTEM', CURRENT_TIMESTAMP, NULL, NULL, false, 'anasdidi@dev', '$2a$10$iWWZec14mq9R32QbOY79De5eJHa0.jO5/M/.m4BJ8A6vE8SFRG2bW', 'lRhmkUuW6BMzSp6MqIA59X-Hediv-wWqkHt-SeHajA8');
+              INSERT INTO TBL_USER (ID, CREATE_BY, CREATE_DT, UPDATE_BY, UPDATE_DT, IS_DEL, USERNAME, PASSWORD, SALT, CHANNEL_ID)
+              VALUES('86be8122-ebc0-4d4f-8050-2d2d7e523ccf', 'SYSTEM', CURRENT_TIMESTAMP, NULL, NULL, false, 'anasdidi@dev', '$2a$10$iWWZec14mq9R32QbOY79De5eJHa0.jO5/M/.m4BJ8A6vE8SFRG2bW', 'lRhmkUuW6BMzSp6MqIA59X-Hediv-wWqkHt-SeHajA8', 'DEV');
       rollback:
         - sql:
-            dbms: h2
             sql: DELETE FROM TBL_USER WHERE ID='86be8122-ebc0-4d4f-8050-2d2d7e523ccf';

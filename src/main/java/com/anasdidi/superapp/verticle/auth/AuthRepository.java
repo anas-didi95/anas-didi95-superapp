@@ -21,7 +21,7 @@ public class AuthRepository extends BaseRepository {
   public Future<UserEntity> getUserByUsername(SqlConnection conn, String username) {
     String sql =
         """
-        SELECT a.ID, a.USERNAME, a.PASSWORD, a.SALT
+        SELECT a.ID, a.USERNAME, a.PASSWORD, a.SALT, a.CHANNEL_ID
         FROM TBL_USER a
         WHERE a.USERNAME = #{username} AND NOT a.IS_DEL
         """;
@@ -33,6 +33,7 @@ public class AuthRepository extends BaseRepository {
           entity.setUsername(r.getString("USERNAME"));
           entity.setPassword(r.getString("PASSWORD"));
           entity.setSalt(r.getString("SALT"));
+          entity.setChannelId(r.getString("CHANNEL_ID"));
           return entity;
         };
 

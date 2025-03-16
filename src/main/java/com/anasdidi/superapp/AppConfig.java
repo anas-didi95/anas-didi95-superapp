@@ -30,11 +30,11 @@ public final class AppConfig {
     return this.jwtAuth;
   }
 
-  public PasswordEncoder getPasswordEncoder() {
-    return passwordEncoder;
+  void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+    this.passwordEncoder = passwordEncoder;
   }
 
-  public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
-    this.passwordEncoder = passwordEncoder;
+  public PasswordEncoder getPasswordEncoder() {
+    return passwordEncoder;
   }
 }
