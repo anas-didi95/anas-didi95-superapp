@@ -21,9 +21,5 @@
     "editor.codeActionsOnSave": {
       "source.fixAll.spotlessGradle": "explicit"
     }
-  },
-
-  "yaml.schemas": {
-    "https://json.schemastore.org/liquibase-3.2.json": "file:///home/vscode/workspace/src/main/resources/db/db.changelog-main.yml"
   }
 }

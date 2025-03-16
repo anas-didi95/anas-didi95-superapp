@@ -241,6 +241,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
           String env = config().getString("env");
           JsonObject db = config().getJsonObject(CommonConstants.CFG_DB);
           String labels = String.join(",", getLiquibaseLabel());
+          String changelogMain = "/db/changelog/db.changelog-main.yml";
           String argChangelog = CommonArgumentNames.CHANGELOG_FILE.getArgumentName();
           String argUrl = CommonArgumentNames.URL.getArgumentName();
           String argUsername = CommonArgumentNames.USERNAME.getArgumentName();
@@ -271,7 +272,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
                         this.getClass().getSimpleName(),
                         version);
                     CommandScope rollback = new CommandScope("rollback");
-                    rollback.addArgumentValue(argChangelog, "/db/db.changelog-main.yml");
+                    rollback.addArgumentValue(argChangelog, changelogMain);
                     rollback.addArgumentValue(argUrl, db.getString(argUrl));
                     rollback.addArgumentValue(argUsername, db.getString(argUsername));
                     rollback.addArgumentValue(argPassword, db.getString(argPassword));
@@ -290,7 +291,7 @@ public abstract class BaseVerticle extends AbstractVerticle {
                     this.getClass().getSimpleName(),
                     getLiquibaseLabel());
                 CommandScope update = new CommandScope("update");
-                update.addArgumentValue(argChangelog, "/db/db.changelog-main.yml");
+                update.addArgumentValue(argChangelog, changelogMain);
                 update.addArgumentValue(argUrl, db.getString(argUrl));
                 update.addArgumentValue(argUsername, db.getString(argUsername));
                 update.addArgumentValue(argPassword, db.getString(argPassword));
