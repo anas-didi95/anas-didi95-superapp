@@ -8,11 +8,15 @@ import com.anasdidi.superapp.verticle.auth.entity.UserEntity;
 import com.anasdidi.superapp.verticle.auth.entity.UserSessionEntity;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.templates.RowMapper;
 import io.vertx.sqlclient.templates.SqlTemplate;
 import io.vertx.sqlclient.templates.TupleMapper;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -136,5 +140,32 @@ public class AuthRepository extends BaseRepository {
         .mapFrom(TupleMapper.jsonObject())
         .execute(param)
         .compose(o -> Future.succeededFuture());
+  }
+
+  public Future<List<String>> getUserAuthorizationList(SqlConnection conn, UUID userId) {
+    String sql =
+        """
+        SELECT d.cd || c.CD
+        FROM TBL_USER a
+        INNER JOIN TBL_ROLE_PERMISSION b ON b.ROLE_ID = a.ROLE_ID
+        INNER JOIN TBL_PERMISSION c ON c.ID = b.PERMISSION_ID
+        INNER JOIN TBL_MODULE d ON d.ID = c.MODULE_ID
+        WHERE a.ID = #{userId}
+          AND NOT d.IS_DEL AND NOT c.IS_DEL
+        """;
+    JsonObject param = JsonObject.of().put("userId", userId.toString());
+
+    return SqlTemplate.forQuery(conn, sql)
+        .mapFrom(TupleMapper.jsonObject())
+        .execute(param)
+        .map(
+            o -> {
+              RowIterator<Row> iterator = o.iterator();
+              List<String> resultList = new ArrayList<>();
+              while (iterator.hasNext()) {
+                resultList.add(iterator.next().getString(0));
+              }
+              return resultList;
+            });
   }
 }

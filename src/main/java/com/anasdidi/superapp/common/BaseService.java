@@ -80,8 +80,8 @@ public abstract class BaseService<
             promise -> {
               if (Objects.nonNull(user)) {
                 boolean isAuthorized =
-                    PermissionBasedAuthorization.create("*").match(user)
-                        || PermissionBasedAuthorization.create(module.code + getOperationId())
+                    PermissionBasedAuthorization.create(ModuleEnum.M001_DEV.code + "*").match(user)
+                        || PermissionBasedAuthorization.create(module.code + getPermission())
                             .match(user);
                 if (!isAuthorized) {
                   promise.fail(new E06UnauthorizedError());

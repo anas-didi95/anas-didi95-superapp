@@ -21,6 +21,7 @@ import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> {
@@ -46,7 +47,8 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
     Future<SqlConnection> conn = repo.getConnection();
     Future<Transaction> tran = conn.compose(o -> o.begin());
     Future<UserEntity> entity =
-        conn.compose(o -> repo.getUserByUsername(o, dto.body().username()))
+        Future.all(conn, tran)
+            .compose(o -> repo.getUserByUsername(conn.result(), dto.body().username()))
             .andThen(
                 o -> {
                   if (o.failed()) {
@@ -59,13 +61,16 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
                     throw new E04InvalidUsernamePasswordError();
                   }
                 });
+    Future<List<String>> permissions =
+        Future.all(conn, entity)
+            .compose(o -> repo.getUserAuthorizationList(conn.result(), entity.result().getId()));
     Future<Void> session =
-        Future.all(conn, tran, entity)
+        Future.all(conn, tran, permissions, entity)
             .compose(o -> repo.upsertUserSession(conn.result(), entity.result().getId()));
 
     return Future.future(
         promise -> {
-          Future.all(conn, tran, entity, session)
+          Future.all(conn, tran, entity, permissions, session)
               .onComplete(
                   o -> {
                     JWTAuth jwt = AppConfig.INSTANCE.getJwtAuth();
@@ -74,7 +79,7 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
                             entity.result().getId(),
                             entity.result().getUsername(),
                             Instant.now(),
-                            Arrays.asList("*"));
+                            permissions.result());
                     String accessToken =
                         jwt.generateToken(
                             JsonObject.mapFrom(userData),

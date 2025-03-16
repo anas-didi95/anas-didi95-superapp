@@ -21,6 +21,9 @@ databaseChangeLog:
       file: db.changelog-2503161047.tbl_role.yml
       relativeToChangelogFile: true
   - include:
+      file: db.changelog-2503161048.tbl_role_permission.yml
+      relativeToChangelogFile: true
+  - include:
       file: db.changelog-2503161102.tbl_user.yml
       relativeToChangelogFile: true
   - include:
