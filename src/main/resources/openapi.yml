@@ -76,14 +76,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AuthLoginReqDto"
+              $ref: "#/components/schemas/AuthAddUserReqDto"
       responses:
         "201":
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthLoginResDto"
+                $ref: "#/components/schemas/AuthAddUserResDto"
 
 components:
   schemas:
@@ -121,6 +121,8 @@ components:
       required:
         - username
         - password
+        - channelId
+        - roleId
       properties:
         username:
           type: string
@@ -128,6 +130,14 @@ components:
         password:
           type: string
           nullable: false
+        channelId:
+          type: string
+          nullable: false
+          example: DEV
+        roleId:
+          type: string
+          nullable: false
+          example: abbacd28-53e8-4457-a8a8-54626997efc0
     AuthAddUserResDto:
       type: object
       properties:

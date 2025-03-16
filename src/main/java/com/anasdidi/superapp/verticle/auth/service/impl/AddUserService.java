@@ -56,7 +56,12 @@ public class AddUserService extends AuthService<AuthAddUserReqDto, AuthAddUserRe
             .compose(
                 o ->
                     repo.insertUser(
-                        conn.result(), dto.body().username(), hashPassword.result(), salt));
+                        conn.result(),
+                        dto.body().username(),
+                        hashPassword.result(),
+                        salt,
+                        dto.body().channelId(),
+                        dto.body().roleId()));
 
     return Future.future(
         promise -> {
@@ -68,6 +73,7 @@ public class AddUserService extends AuthService<AuthAddUserReqDto, AuthAddUserRe
                   },
                   e -> {
                     tran.compose(oo -> oo.rollback()).eventually(() -> conn.result().close());
+                    promise.fail(e);
                   });
         });
   }

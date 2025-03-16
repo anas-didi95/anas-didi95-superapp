@@ -122,11 +122,16 @@ public class AuthRepository extends BaseRepository {
   }
 
   public Future<Void> insertUser(
-      SqlConnection conn, String username, String hashPassword, String salt) {
+      SqlConnection conn,
+      String username,
+      String hashPassword,
+      String salt,
+      String channelId,
+      UUID roleId) {
     String sql =
         """
-        INSERT INTO TBL_USER (ID, CREATE_BY, CREATE_DT, IS_DEL, USERNAME, PASSWORD, SALT)
-        VALUES (#{id}, 'SYSTEM', #{createDate}, false, #{username}, #{hashPassword}, #{salt});
+        INSERT INTO TBL_USER (ID, CREATE_BY, CREATE_DT, IS_DEL, USERNAME, PASSWORD, SALT, CHANNEL_ID, ROLE_ID)
+        VALUES (#{id}, 'SYSTEM', #{createDate}, false, #{username}, #{hashPassword}, #{salt}, #{channelId}, #{roleId});
         """;
     JsonObject param =
         JsonObject.of()
@@ -134,7 +139,9 @@ public class AuthRepository extends BaseRepository {
             .put("createDate", OffsetDateTime.now())
             .put("username", username)
             .put("hashPassword", hashPassword)
-            .put("salt", salt);
+            .put("salt", salt)
+            .put("channelId", channelId)
+            .put("roleId", roleId.toString());
 
     return SqlTemplate.forUpdate(conn, sql)
         .mapFrom(TupleMapper.jsonObject())
