@@ -58,12 +58,24 @@ databaseChangeLog:
                   type: VARCHAR(10)
                   constraints:
                     nullable: false
+              - column:
+                  name: ROLE_ID
+                  type: UUID
+                  constraints:
+                    nullable: false
 
         - addForeignKeyConstraint:
             baseTableName: TBL_USER
             baseColumnNames: CHANNEL_ID
             constraintName: FRK_USER#CHANNEL
             referencedTableName: TBL_CHANNEL
+            referencedColumnNames: ID
+
+        - addForeignKeyConstraint:
+            baseTableName: TBL_USER
+            baseColumnNames: ROLE_ID
+            constraintName: FRK_USER#ROLE
+            referencedTableName: TBL_ROLE
             referencedColumnNames: ID
 
         - createIndex:
@@ -85,8 +97,8 @@ databaseChangeLog:
         - sql:
             dbms: h2
             sql: |
-              INSERT INTO TBL_USER (ID, CREATE_BY, CREATE_DT, UPDATE_BY, UPDATE_DT, IS_DEL, USERNAME, PASSWORD, SALT, CHANNEL_ID)
-              VALUES('86be8122-ebc0-4d4f-8050-2d2d7e523ccf', 'SYSTEM', CURRENT_TIMESTAMP, NULL, NULL, false, 'anasdidi@dev', '$2a$10$iWWZec14mq9R32QbOY79De5eJHa0.jO5/M/.m4BJ8A6vE8SFRG2bW', 'lRhmkUuW6BMzSp6MqIA59X-Hediv-wWqkHt-SeHajA8', 'DEV');
+              INSERT INTO TBL_USER (ID, CREATE_BY, CREATE_DT, UPDATE_BY, UPDATE_DT, IS_DEL, USERNAME, PASSWORD, SALT, CHANNEL_ID, ROLE_ID)
+              VALUES('86be8122-ebc0-4d4f-8050-2d2d7e523ccf', 'SYSTEM', CURRENT_TIMESTAMP, NULL, NULL, false, 'anasdidi@dev', '$2a$10$iWWZec14mq9R32QbOY79De5eJHa0.jO5/M/.m4BJ8A6vE8SFRG2bW', 'lRhmkUuW6BMzSp6MqIA59X-Hediv-wWqkHt-SeHajA8', 'DEV', '8075146d-af2f-4075-a98d-4d9fe1a7f5bb');
       rollback:
         - sql:
             sql: DELETE FROM TBL_USER WHERE ID='86be8122-ebc0-4d4f-8050-2d2d7e523ccf';
