@@ -15,7 +15,7 @@ databaseChangeLog:
                     primaryKey: true
               - column:
                   name: DSCP
-                  type: VARCHAR(50)
+                  type: VARCHAR(30)
                   constraints:
                     nullable: false
               - column:

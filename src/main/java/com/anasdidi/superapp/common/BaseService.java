@@ -1,6 +1,7 @@
 /* (C) Anas Juwaidi Bin Mohd Jeffry. All rights reserved. */
 package com.anasdidi.superapp.common;
 
+import com.anasdidi.superapp.common.enums.ModuleEnum;
 import com.anasdidi.superapp.error.BaseError;
 import com.anasdidi.superapp.error.E00InternalServerError;
 import com.anasdidi.superapp.error.E06UnauthorizedError;
@@ -28,12 +29,14 @@ public abstract class BaseService<
   private static final Logger logger = LogManager.getLogger(BaseService.class);
   private final Class<A> bodyClass;
   private final Class<C> repoClass;
+  private final ModuleEnum module;
   protected Vertx vertx;
   private BaseRepository repository;
 
-  public BaseService(Class<A> bodyClass, Class<C> repoClass) {
+  public BaseService(Class<A> bodyClass, Class<C> repoClass, ModuleEnum module) {
     this.bodyClass = bodyClass;
     this.repoClass = repoClass;
+    this.module = module;
   }
 
   public abstract String getOperationId();
@@ -76,7 +79,8 @@ public abstract class BaseService<
               if (Objects.nonNull(user)) {
                 boolean isAuthorized =
                     PermissionBasedAuthorization.create("*").match(user)
-                        || PermissionBasedAuthorization.create(getOperationId()).match(user);
+                        || PermissionBasedAuthorization.create(module.code + getOperationId())
+                            .match(user);
                 if (!isAuthorized) {
                   promise.fail(new E06UnauthorizedError());
                 }

@@ -17,3 +17,6 @@ databaseChangeLog:
   - include:
       file: db.changelog-2503091600.tbl_user_session.yml
       relativeToChangelogFile: true
+  - include:
+      file: db.changelog-2503160912.tbl_module.yml
+      relativeToChangelogFile: true

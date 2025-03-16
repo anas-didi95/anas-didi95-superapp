@@ -3,6 +3,7 @@ package com.anasdidi.superapp.verticle.helloworld.service;
 
 import com.anasdidi.superapp.common.BaseRepository;
 import com.anasdidi.superapp.common.BaseService;
+import com.anasdidi.superapp.common.enums.ModuleEnum;
 import com.anasdidi.superapp.verticle.helloworld.dto.HelloWorldBaseReqDto;
 import com.anasdidi.superapp.verticle.helloworld.dto.HelloWorldBaseResDto;
 
@@ -11,6 +12,6 @@ public abstract class HelloWorldService<
     extends BaseService<A, B, BaseRepository> {
 
   public HelloWorldService(Class<A> bodyClass) {
-    super(bodyClass, null);
+    super(bodyClass, null, ModuleEnum.M000_HELLO_WORLD);
   }
 }

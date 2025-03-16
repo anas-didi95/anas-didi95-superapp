@@ -1,0 +1,72 @@
+databaseChangeLog:
+  - changeSet:
+      id: db.changelog-2503160912.tbl_module-1
+      author: anas
+      labels: auth
+      changes:
+        - createTable:
+            tableName: TBL_MODULE
+            columns:
+              - column:
+                  name: ID
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: CD
+                  type: VARCHAR(5)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: DSCP
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: SELECTABLE
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CREATE_BY
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CREATE_DT
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: IS_DEL
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            tableName: TBL_MODULE
+            indexName: IDX_MODULE#CD
+            unique: true
+            column:
+              name: CD
+
+  - changeSet:
+      id: db.changelog-2503160912.tbl_module-2
+      author: anas
+      labels: auth
+      changes:
+        - sql:
+            dbms: h2
+            sql: |
+              INSERT INTO TBL_MODULE (ID, CD, DSCP, SELECTABLE, CREATE_BY, CREATE_DT, IS_DEL)
+              VALUES(1, 'M000', 'Hello World', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
+              INSERT INTO TBL_MODULE (ID, CD, DSCP, SELECTABLE, CREATE_BY, CREATE_DT, IS_DEL)
+              VALUES(2, 'M001', 'Trace Log', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
+              INSERT INTO TBL_MODULE (ID, CD, DSCP, SELECTABLE, CREATE_BY, CREATE_DT, IS_DEL)
+              VALUES(3, 'M002', 'Authentication', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
+      rollback:
+        - sql:
+            sql: |
+              DELETE FROM TBL_MODULE WHERE ID IN (1, 2, 3);
