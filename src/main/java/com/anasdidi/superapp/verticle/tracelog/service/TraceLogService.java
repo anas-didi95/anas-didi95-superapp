@@ -11,6 +11,6 @@ public abstract class TraceLogService<A extends TraceLogBaseReqDto, B extends Tr
     extends BaseService<A, B, TraceLogRepository> {
 
   public TraceLogService(Class<A> bodyClass) {
-    super(bodyClass, TraceLogRepository.class, ModuleEnum.M001_TRACE_LOG);
+    super(bodyClass, TraceLogRepository.class, ModuleEnum.M002_TRACE_LOG);
   }
 }

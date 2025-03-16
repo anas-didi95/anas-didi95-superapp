@@ -41,6 +41,11 @@ public class GreetService extends HelloWorldService<HelloWorldGreetReqDto, Hello
   }
 
   @Override
+  protected String getPermission() {
+    return "P001";
+  }
+
+  @Override
   protected HelloWorldGreetReqDto parseMessage(JsonObject body, MultiMap headers) {
     return new HelloWorldGreetReqDto();
   }

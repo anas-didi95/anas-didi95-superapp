@@ -31,6 +31,11 @@ public class CheckJwtService extends AuthService<AuthCheckJwtReqDto, AuthCheckJw
   }
 
   @Override
+  protected String getPermission() {
+    return "P003";
+  }
+
+  @Override
   protected Future<OutboundDto<AuthCheckJwtResDto>> handle(
       User user, InboundDto<AuthCheckJwtReqDto> dto, Map<String, Object> opts, String traceId) {
     AuthUser authUser = user.principal().mapTo(AuthUser.class);

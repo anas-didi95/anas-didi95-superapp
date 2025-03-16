@@ -1,0 +1,105 @@
+databaseChangeLog:
+  - changeSet:
+      id: db.changelog-2503160958.tbl_permission-1
+      author: anas
+      labels: auth
+      changes:
+        - createTable:
+            tableName: TBL_PERMISSION
+            columns:
+              - column:
+                  name: ID
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: MODULE_ID
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CD
+                  type: VARCHAR(5)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: DSCP
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: OPERATION_ID
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: SELECTABLE
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CREATE_BY
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CREATE_DT
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: IS_DEL
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: TBL_PERMISSION
+            baseColumnNames: MODULE_ID
+            constraintName: FRK_PERMISSION#MODULE
+            referencedTableName: TBL_MODULE
+            referencedColumnNames: ID
+
+        - createIndex:
+            tableName: TBL_PERMISSION
+            indexName: IDX_PERMISSION#MODULE_ID_CD
+            unique: true
+            columns:
+              - column:
+                  name: MODULE_ID
+              - column:
+                  name: CD
+
+        - createIndex:
+            tableName: TBL_PERMISSION
+            indexName: IDX_PERMISSION#OPERATION_ID
+            unique: true
+            column:
+              name: OPERATION_ID
+
+  - changeSet:
+      id: a
+      author: anas
+      labels: auth
+      changes:
+        - sql:
+            dbms: h2
+            sql: |
+              INSERT INTO TBL_PERMISSION (ID, MODULE_ID, CD, DSCP, OPERATION_ID, SELECTABLE, CREATE_BY, CREATE_DT, IS_DEL)
+              VALUES (1, 1, '*', 'All Permissions', 'superadmin', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
+              INSERT INTO TBL_PERMISSION (ID, MODULE_ID, CD, DSCP, OPERATION_ID, SELECTABLE, CREATE_BY, CREATE_DT, IS_DEL)
+              VALUES (2, 1, 'P001', 'Greet', 'greet', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
+              INSERT INTO TBL_PERMISSION (ID, MODULE_ID, CD, DSCP, OPERATION_ID, SELECTABLE, CREATE_BY, CREATE_DT, IS_DEL)
+              VALUES (3, 3, 'P001', 'Login', 'login', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
+              INSERT INTO TBL_PERMISSION (ID, MODULE_ID, CD, DSCP, OPERATION_ID, SELECTABLE, CREATE_BY, CREATE_DT, IS_DEL)
+              VALUES (4, 3, 'P002', 'Add User', 'addUser', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
+              INSERT INTO TBL_PERMISSION (ID, MODULE_ID, CD, DSCP, OPERATION_ID, SELECTABLE, CREATE_BY, CREATE_DT, IS_DEL)
+              VALUES (5, 3, 'P003', 'Check JWT', 'checkJwt', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
+              INSERT INTO TBL_PERMISSION (ID, MODULE_ID, CD, DSCP, OPERATION_ID, SELECTABLE, CREATE_BY, CREATE_DT, IS_DEL)
+              VALUES (6, 2, 'P001', 'Save Log', 'saveLog', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
+      rollback:
+        - sql:
+            sql: |
+              DELETE FROM TBL_PERMISSION WHERE ID IN (1, 2, 3, 4, 5);

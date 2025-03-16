@@ -12,6 +12,6 @@ public abstract class HelloWorldService<
     extends BaseService<A, B, BaseRepository> {
 
   public HelloWorldService(Class<A> bodyClass) {
-    super(bodyClass, null, ModuleEnum.M000_HELLO_WORLD);
+    super(bodyClass, null, ModuleEnum.M001_DEV);
   }
 }

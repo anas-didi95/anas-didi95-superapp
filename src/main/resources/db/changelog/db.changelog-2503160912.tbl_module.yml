@@ -61,11 +61,11 @@ databaseChangeLog:
             dbms: h2
             sql: |
               INSERT INTO TBL_MODULE (ID, CD, DSCP, SELECTABLE, CREATE_BY, CREATE_DT, IS_DEL)
-              VALUES(1, 'M000', 'Hello World', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
+              VALUES (1, 'M001', 'Development', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
               INSERT INTO TBL_MODULE (ID, CD, DSCP, SELECTABLE, CREATE_BY, CREATE_DT, IS_DEL)
-              VALUES(2, 'M001', 'Trace Log', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
+              VALUES (2, 'M002', 'Trace Log', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
               INSERT INTO TBL_MODULE (ID, CD, DSCP, SELECTABLE, CREATE_BY, CREATE_DT, IS_DEL)
-              VALUES(3, 'M002', 'Authentication', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
+              VALUES (3, 'M003', 'Authentication', false, 'SYSTEM', CURRENT_TIMESTAMP, false);
       rollback:
         - sql:
             sql: |

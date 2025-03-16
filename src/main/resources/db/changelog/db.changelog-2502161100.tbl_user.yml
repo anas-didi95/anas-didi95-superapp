@@ -62,7 +62,7 @@ databaseChangeLog:
         - addForeignKeyConstraint:
             baseTableName: TBL_USER
             baseColumnNames: CHANNEL_ID
-            constraintName: FKR_USER#CHANNEL
+            constraintName: FRK_USER#CHANNEL
             referencedTableName: TBL_CHANNEL
             referencedColumnNames: ID
 

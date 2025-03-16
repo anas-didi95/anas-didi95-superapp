@@ -11,6 +11,6 @@ public abstract class AuthService<A extends AuthBaseReqDto, B extends AuthBaseRe
     extends BaseService<A, B, AuthRepository> {
 
   public AuthService(Class<A> bodyClass) {
-    super(bodyClass, AuthRepository.class, ModuleEnum.MOO2_AUTH);
+    super(bodyClass, AuthRepository.class, ModuleEnum.MOO3_AUTH);
   }
 }

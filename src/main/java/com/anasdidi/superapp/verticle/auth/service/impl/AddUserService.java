@@ -33,6 +33,11 @@ public class AddUserService extends AuthService<AuthAddUserReqDto, AuthAddUserRe
   }
 
   @Override
+  protected String getPermission() {
+    return "P002";
+  }
+
+  @Override
   protected Future<OutboundDto<AuthAddUserResDto>> handle(
       User user, InboundDto<AuthAddUserReqDto> dto, Map<String, Object> opts, String traceId) {
     AuthRepository repo = getRepository();

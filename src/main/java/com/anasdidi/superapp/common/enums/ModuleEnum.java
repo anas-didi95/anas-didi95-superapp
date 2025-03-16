@@ -2,9 +2,9 @@
 package com.anasdidi.superapp.common.enums;
 
 public enum ModuleEnum {
-  M000_HELLO_WORLD("M000"),
-  M001_TRACE_LOG("M001"),
-  MOO2_AUTH("M002");
+  M001_DEV("M001"),
+  M002_TRACE_LOG("M002"),
+  MOO3_AUTH("M003");
 
   public final String code;
 

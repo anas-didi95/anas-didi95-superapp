@@ -41,6 +41,8 @@ public abstract class BaseService<
 
   public abstract String getOperationId();
 
+  protected abstract String getPermission();
+
   protected abstract Future<OutboundDto<B>> handle(
       User user, InboundDto<A> dto, Map<String, Object> opts, String traceId);
 

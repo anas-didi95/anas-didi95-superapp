@@ -35,6 +35,11 @@ public class LoginService extends AuthService<AuthLoginReqDto, AuthLoginResDto> 
   }
 
   @Override
+  protected String getPermission() {
+    return "P001";
+  }
+
+  @Override
   protected Future<OutboundDto<AuthLoginResDto>> handle(
       User user, InboundDto<AuthLoginReqDto> dto, Map<String, Object> opts, String traceId) {
     AuthRepository repo = getRepository();
