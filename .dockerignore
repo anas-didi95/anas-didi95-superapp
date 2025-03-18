@@ -1,0 +1,8 @@
+.devcontainer/
+.github/
+.gradle/
+.gradle-cache/
+.h2/
+.vscode/
+.vscode-server/
+.git/
