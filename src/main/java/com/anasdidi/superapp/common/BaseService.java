@@ -137,7 +137,9 @@ public abstract class BaseService<
     out.onComplete(
             o -> {
               logger.info("{} OUT :: {}", getTag(traceId), CommonUtils.log(o));
-              ctx.response().end(JsonObject.mapFrom(o.result()).encode());
+              CommonUtils.prepareResponse(ctx)
+                  .setStatusCode(200)
+                  .end(JsonObject.mapFrom(o.result()).encode());
             },
             e -> {
               logger.debug("{} ERR :: {}", getTag(traceId), e.getMessage());

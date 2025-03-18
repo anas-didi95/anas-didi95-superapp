@@ -99,7 +99,7 @@ public class MainVerticle extends AbstractVerticle {
                           ctx.failure() instanceof E00InternalServerError
                               ? (E00InternalServerError) ctx.failure()
                               : new E00InternalServerError(ctx.failure().getMessage());
-                      ctx.response()
+                      CommonUtils.prepareResponse(ctx)
                           .setStatusCode(500)
                           .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                           .end(e.getResponseBody(ctx).encode());
@@ -111,7 +111,7 @@ public class MainVerticle extends AbstractVerticle {
                     logger.warn("{} ERROR...", getTag(ctx, 404), ctx.failure());
 
                     E01ResourceNotFoundError e = new E01ResourceNotFoundError();
-                    ctx.response()
+                    CommonUtils.prepareResponse(ctx)
                         .setStatusCode(404)
                         .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                         .end(e.getResponseBody(ctx).encode());
@@ -122,7 +122,7 @@ public class MainVerticle extends AbstractVerticle {
                     logger.debug("{} ERROR...", getTag(ctx, 400), ctx.failure());
 
                     if (ctx.failure() instanceof BaseError ee) {
-                      ctx.response()
+                      CommonUtils.prepareResponse(ctx)
                           .setStatusCode(400)
                           .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                           .end(ee.getResponseBody(ctx).encode());
