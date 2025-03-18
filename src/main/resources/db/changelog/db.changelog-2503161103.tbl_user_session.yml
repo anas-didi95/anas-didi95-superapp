@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      id: db.changelog-2503091600.tbl_user_session-1
+      author: anas
+      labels: auth
+      changes:
+        - createTable:
+            tableName: TBL_USER_SESSION
+            columns:
+              - column:
+                  name: ID
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: USER_ID
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: VALID_AFTER_DT
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: TBL_USER_SESSION
+            baseColumnNames: USER_ID
+            referencedTableName: TBL_USER
+            referencedColumnNames: ID
+            constraintName: FRK_USER_SESSION#USER
+
+        - createIndex:
+            tableName: TBL_USER_SESSION
+            column:
+              name: USER_ID
+            unique: true
+            indexName: IDX_USER_SESS#USER_ID

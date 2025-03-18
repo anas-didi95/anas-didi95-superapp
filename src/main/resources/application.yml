@@ -1,0 +1,55 @@
+app:
+  port: 8888
+  openApiPath: openapi.yml
+
+  security:
+    secret: test123
+    issuer: anas-didi95@superapp
+    expiresInSeconds: 86400
+    audience: DEV,SCHOOL
+
+  verticle:
+    HelloWorldVerticle:
+      enabled: true
+      db:
+        migrate: false
+        url: jdbc:h2:./.h2/helloworld
+        username: sa
+        password: sa
+      handler:
+        greet:
+          enabled: true
+          eventType: GREET
+          opts:
+            trace: true
+            journalUrl: test123
+
+    TraceLogVerticle:
+      enabled: true
+      db:
+        migrate: true
+        url: jdbc:h2:./.h2/tracelog
+        username: sa
+        password: sa
+      handler:
+        saveLog:
+          enabled: true
+          eventType: SAVE_LOG
+
+    AuthVerticle:
+      enabled: true
+      db:
+        migrate: true
+        url: jdbc:h2:./.h2/auth
+        username: sa
+        password: sa
+      handler:
+        login:
+          enabled: true
+        checkJwt:
+          enabled: true
+          eventType: CHECK_JWT
+        addUser:
+          enabled: true
+          opts:
+            trace: true

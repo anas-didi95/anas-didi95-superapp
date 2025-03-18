@@ -1,0 +1,75 @@
+databaseChangeLog:
+  - changeSet:
+      id: db.changelog-2503161048.tbl_role_permission-1
+      author: anas
+      labels: auth
+      changes:
+        - createTable:
+            tableName: TBL_ROLE_PERMISSION
+            columns:
+              - column:
+                  name: ID
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: ROLE_ID
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: PERMISSION_ID
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CREATE_BY
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CREATE_DT
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: TBL_ROLE_PERMISSION
+            baseColumnNames: ROLE_ID
+            constraintName: IDX_ROLE_PERM#ROLE
+            referencedTableName: TBL_ROLE
+            referencedColumnNames: ID
+
+        - addForeignKeyConstraint:
+            baseTableName: TBL_ROLE_PERMISSION
+            baseColumnNames: PERMISSION_ID
+            constraintName: IDX_ROLE_PERM#PERM
+            referencedTableName: TBL_PERMISSION
+            referencedColumnNames: ID
+
+        - createIndex:
+            tableName: TBL_ROLE_PERMISSION
+            indexName: IDX_ROLE_PERM#ROLE_ID_PERM_ID
+            unique: true
+            columns:
+              - column:
+                  name: ROLE_ID
+              - column:
+                  name: PERMISSION_ID
+
+  - changeSet:
+      id: db.changelog-2503161048.tbl_role_permission-2
+      author: anas
+      labels: auth
+      changes:
+        - sql:
+            dbms: h2
+            sql: |
+              INSERT INTO TBL_ROLE_PERMISSION (ID, ROLE_ID, PERMISSION_ID, CREATE_BY, CREATE_DT)
+              VALUES (1, '8075146d-af2f-4075-a98d-4d9fe1a7f5bb', 1, 'SYSTEM', CURRENT_TIMESTAMP);
+      rollback:
+        - sql:
+            sql: |
+              DELETE FROM TBL_ROLE_PERMISSION WHERE ID=1;

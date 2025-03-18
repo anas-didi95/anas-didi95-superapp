@@ -1,0 +1,62 @@
+databaseChangeLog:
+  - changeSet:
+      id: db.changelog-2503161047.tbl_role-1
+      author: anas
+      labels: auth
+      changes:
+        - createTable:
+            tableName: TBL_ROLE
+            columns:
+              - column:
+                  name: ID
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: CREATE_BY
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CREATE_DT
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: UPDATE_BY
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: UPDATE_DT
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: true
+              - column:
+                  name: IS_DEL
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: DSCP
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: db.changelog-2503161047.tbl_role-2
+      author: anas
+      labels: auth
+      changes:
+        - sql:
+            dbms: h2
+            sql: |
+              INSERT INTO TBL_ROLE (ID, CREATE_BY, CREATE_DT, UPDATE_BY, UPDATE_DT, IS_DEL, DSCP)
+              VALUES ('abbacd28-53e8-4457-a8a8-54626997efc0', 'SYSTEM', CURRENT_TIMESTAMP, NULL, NULL, false, 'No Role');
+              INSERT INTO TBL_ROLE (ID, CREATE_BY, CREATE_DT, UPDATE_BY, UPDATE_DT, IS_DEL, DSCP)
+              VALUES ('8075146d-af2f-4075-a98d-4d9fe1a7f5bb', 'SYSTEM', CURRENT_TIMESTAMP, NULL, NULL, false, 'Developer');
+      rollback:
+        - sql:
+            sql: |
+              DELETE FROM TBL_ROLE WHERE ID IN ('abbacd28-53e8-4457-a8a8-54626997efc0', '8075146d-af2f-4075-a98d-4d9fe1a7f5bb');

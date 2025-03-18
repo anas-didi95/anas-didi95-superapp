@@ -1,0 +1,104 @@
+databaseChangeLog:
+  - changeSet:
+      id: db.changelog-2502161100.tbl_user-1
+      author: anas
+      labels: auth
+      changes:
+        - createTable:
+            tableName: TBL_USER
+            columns:
+              - column:
+                  name: ID
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: CREATE_BY
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CREATE_DT
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: UPDATE_BY
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: UPDATE_DT
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: true
+              - column:
+                  name: IS_DEL
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: USERNAME
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: PASSWORD
+                  type: VARCHAR(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: SALT
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CHANNEL_ID
+                  type: VARCHAR(10)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ROLE_ID
+                  type: UUID
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: TBL_USER
+            baseColumnNames: CHANNEL_ID
+            constraintName: FRK_USER#CHANNEL
+            referencedTableName: TBL_CHANNEL
+            referencedColumnNames: ID
+
+        - addForeignKeyConstraint:
+            baseTableName: TBL_USER
+            baseColumnNames: ROLE_ID
+            constraintName: FRK_USER#ROLE
+            referencedTableName: TBL_ROLE
+            referencedColumnNames: ID
+
+        - createIndex:
+            indexName: IDX_USER#USERNAME_IS_DEL
+            unique: true
+            tableName: TBL_USER
+            columns:
+              - column:
+                  name: USERNAME
+              - column:
+                  name: IS_DEL
+
+  - changeSet:
+      id: db.changelog-2502161100.tbl_user-2
+      author: anas
+      labels: auth
+      context: dev
+      changes:
+        - sql:
+            dbms: h2
+            sql: |
+              INSERT INTO TBL_USER (ID, CREATE_BY, CREATE_DT, UPDATE_BY, UPDATE_DT, IS_DEL, USERNAME, PASSWORD, SALT, CHANNEL_ID, ROLE_ID)
+              VALUES('86be8122-ebc0-4d4f-8050-2d2d7e523ccf', 'SYSTEM', CURRENT_TIMESTAMP, NULL, NULL, false, 'anasdidi@dev', '$2a$10$iWWZec14mq9R32QbOY79De5eJHa0.jO5/M/.m4BJ8A6vE8SFRG2bW', 'lRhmkUuW6BMzSp6MqIA59X-Hediv-wWqkHt-SeHajA8', 'DEV', '8075146d-af2f-4075-a98d-4d9fe1a7f5bb');
+      rollback:
+        - sql:
+            sql: DELETE FROM TBL_USER WHERE ID='86be8122-ebc0-4d4f-8050-2d2d7e523ccf';

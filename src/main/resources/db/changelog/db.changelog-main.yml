@@ -1,0 +1,31 @@
+databaseChangeLog:
+  - changeSet:
+      id: db.changelog-main-0.1.0
+      author: anas
+      changes:
+        - tagDatabase:
+            tag: 0.1.0
+  - include:
+      file: db.changelog-2502112044.tbl_trace_log.yml
+      relativeToChangelogFile: true
+  - include:
+      file: db.changelog-2502161059.tbl_channel.yml
+      relativeToChangelogFile: true
+  - include:
+      file: db.changelog-2503160912.tbl_module.yml
+      relativeToChangelogFile: true
+  - include:
+      file: db.changelog-2503160958.tbl_permission.yml
+      relativeToChangelogFile: true
+  - include:
+      file: db.changelog-2503161047.tbl_role.yml
+      relativeToChangelogFile: true
+  - include:
+      file: db.changelog-2503161048.tbl_role_permission.yml
+      relativeToChangelogFile: true
+  - include:
+      file: db.changelog-2503161102.tbl_user.yml
+      relativeToChangelogFile: true
+  - include:
+      file: db.changelog-2503161103.tbl_user_session.yml
+      relativeToChangelogFile: true

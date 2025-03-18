@@ -1,0 +1,60 @@
+databaseChangeLog:
+  - changeSet:
+      id: db.changelog-2502161059.tbl_channel-1
+      author: anas
+      labels: auth
+      changes:
+        - createTable:
+            tableName: TBL_CHANNEL
+            columns:
+              - column:
+                  name: ID
+                  type: VARCHAR(10)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: DSCP
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CREATE_BY
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CREATE_DT
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: IS_DEL
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            tableName: TBL_CHANNEL
+            indexName: IDX_CHANNEL#ID_IS_DEL
+            unique: true
+            columns:
+              - column:
+                  name: ID
+              - column:
+                  name: IS_DEL
+
+  - changeSet:
+      id: db.changelog-2502161059.tbl_channel-2
+      author: anas
+      labels: auth
+      changes:
+        - sql:
+            dbms: h2
+            sql: |
+              INSERT INTO TBL_CHANNEL (ID, DSCP, CREATE_BY, CREATE_DT, IS_DEL)
+              VALUES ('DEV', 'Development', 'SYSTEM', CURRENT_TIMESTAMP, false);
+      rollback:
+        - sql:
+            sql: |
+              DELETE FROM TBL_CHANNEL WHERE ID='DEV';

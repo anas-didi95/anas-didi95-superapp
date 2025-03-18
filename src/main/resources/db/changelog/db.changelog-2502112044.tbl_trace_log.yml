@@ -1,0 +1,82 @@
+databaseChangeLog:
+  - changeSet:
+      id: db.changelog-2502112044.tbl_trace_log-1
+      author: anas
+      labels: tracelog
+      changes:
+        - createTable:
+            tableName: TBL_TRACE_LOG
+            columns:
+              - column:
+                  name: ID
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: CREATE_BY
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: CREATE_DT
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: TRACE_ID
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ORIGIN
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: IN_PAYLOAD
+                  type: CLOB
+                  constraints:
+                    nullable: false
+              - column:
+                  name: OPTS
+                  type: CLOB
+                  constraints:
+                    nullable: false
+              - column:
+                  name: OUT_PAYLOAD
+                  type: CLOB
+                  constraints:
+                    nullable: false
+              - column:
+                  name: IS_ERR
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: REF1
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: REF2
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: REF3
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+
+        - createIndex:
+            indexName: IDX_TRACE_LOG#TRACE_ID
+            tableName: TBL_TRACE_LOG
+            column:
+              name: TRACE_ID
+        - createIndex:
+            indexName: IDX_TRACE_LOG#IS_ERR
+            tableName: TBL_TRACE_LOG
+            column:
+              name: IS_ERR
