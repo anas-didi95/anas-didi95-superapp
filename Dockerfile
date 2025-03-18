@@ -21,5 +21,4 @@ WORKDIR /app
 COPY --from=build /app/build/libs/*-fat.jar app.jar
 RUN mkdir .h2
 
-ENTRYPOINT [ "sh", "-c" ]
-CMD ["java -jar app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
